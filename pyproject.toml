@@ -1,14 +1,50 @@
 [tool.poetry]
 name = "markpi"
 version = "0.1.0"
-description = ""
+description = "Markdown Programmable interface"
 authors = ["rishikanthc <r3chandr@ucsd.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+falcon = "^3.1.3"
+pyyaml = "^6.0.1"
+markdown = "^3.6"
+loguru = "^0.7.2"
+fire = "^0.6.0"
+gunicorn = "^22.0.0"
+falcon-cors = "^1.1.7"
+pydantic = "^2.8.2"
+
+[tool.poetry.group.dev.dependencies]
+basedpyright = "*"
+ruff = "*"
+pre-commit = "*"
+pytest = "*"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pyright]
+venvPath = "/Users/rishi/miniconda3/envs"
+venv = "markpi"
+useLibraryCodeForTypes = true
+typeCheckingMode = "standard"
+reportUnusedImport = "warning"
+reportUnusedVariable = "warning"
+reportDuplicateImport = "error"
+reportPrivateUsage = "warning"
+reportDeprecated = "warning"
+reportInconsistentConstructor = "error"
+reportMissingSuperCall = "error"
+reportUninitializedInstanceVariable = "error"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryComparison = "warning"
+reportImplicitStringConcatenation = "warning"
+diagnosticMode = "openFilesOnly"
+
+
+# [tool.poetry.scripts]
