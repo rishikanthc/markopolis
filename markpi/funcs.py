@@ -1,83 +1,71 @@
-from typing import Union
 from .data_dantic import (
-    NoteTitle,
     NoteMeta,
     NoteContent,
-    Note,
     ToCItem,
     ToC,
-    Backlink,
-    BacklinkList,
     MarkdownFileList,
+    Error,
 )
 from .md import (
     list_markdown_files,
     get_meta,
     get_note_content,
     get_toc,
-    get_backlinks_slow,
 )
+from loguru import logger
+
+__all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
 
 
-def list_markdown_files_wrapper() -> Union[MarkdownFileList, str]:
+def list_md():
     files, error = list_markdown_files()
-    if error:
-        return error
-    return MarkdownFileList(files=files)
+
+    if files is not None:
+        return MarkdownFileList(files=files)
+    elif error is not None:
+        return Error(message=error)
+    else:
+        logger.error("Something bad happened, both files and error was None")
 
 
-def get_note_wrapper(note_title: str) -> Union[Note, str]:
-    meta_dict, meta_error = get_meta(note_title)
-    if meta_error:
-        return f"Error getting metadata: {meta_error}"
+def get_metadata(note_title):
+    metadata, error = get_meta(note_title)
 
-    content, content_error = get_note_content(note_title)
-    if content_error:
-        return f"Error getting note content: {content_error}"
-
-    markdown_content, html_content = content
-
-    meta = NoteMeta(
-        title=meta_dict.get("title", note_title),
-        date=meta_dict.get("date"),
-        tags=meta_dict.get("tags", []),
-        custom_fields={
-            k: v for k, v in meta_dict.items() if k not in ["title", "date", "tags"]
-        },
-    )
-
-    return Note(
-        title=NoteTitle(value=note_title),
-        meta=meta,
-        content=NoteContent(markdown=markdown_content, html=html_content),
-    )
+    if metadata is not None:
+        return NoteMeta(
+            title=metadata["title"], date=metadata["date"], tags=metadata["tags"]
+        )
+    elif error is not None:
+        return Error(message=error)
+    else:
+        logger.error("Something bad happened, both files and error was None")
 
 
-def get_toc_wrapper(note_title: str) -> Union[ToC, str]:
-    toc_dict, error = get_toc(note_title)
-    if error:
-        return f"Error getting table of contents: {error}"
+def get_note(note_title):
+    content, error = get_note_content(note_title)
 
-    def dict_to_toc_item(d: dict) -> ToCItem:
-        if not d:
-            return ToCItem(title="", children={})
-        title = next(iter(d))
-        children = d[title]
+    if content is not None:
+        return NoteContent(markdown=content[0], html=content[1])
+    elif error is not None:
+        logger.error(f"{error}")
+        return Error(message=error)
+    else:
+        logger.error("Something bad happened")
+
+
+def get_headings(note_title):
+    toc, error = get_toc(note_title)
+
+    def create_toc_item(title: str, children: dict) -> ToCItem:
         return ToCItem(
             title=title,
-            children={k: dict_to_toc_item(v) for k, v in children.items()},
+            children={k: create_toc_item(k, v) for k, v in children.items()},
         )
 
-    toc_items = {k: dict_to_toc_item({k: v}) for k, v in toc_dict.items()}
-    return ToC(headings=toc_items)
-
-
-def get_backlinks_wrapper(note_title: str) -> Union[BacklinkList, str]:
-    backlink_files, error = get_backlinks_slow(note_title)
-    if error:
-        return f"Error getting backlinks: {error}"
-
-    backlinks = [
-        Backlink(title=file.replace(".md", ""), link=file) for file in backlink_files
-    ]
-    return BacklinkList(backlinks=backlinks)
+    if toc is not None:
+        headings = {k: create_toc_item(k, v) for k, v in toc.items()}
+        return ToC(headings=headings)
+    elif error is not None:
+        return Error(message=error)
+    else:
+        logger.error("Something bad happened")

@@ -3,6 +3,10 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 
+class Error(BaseModel):
+    message: str
+
+
 class NoteTitle(BaseModel):
     value: str
 

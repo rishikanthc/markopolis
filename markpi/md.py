@@ -4,7 +4,7 @@ import yaml
 import re
 from collections import defaultdict
 
-MDROOT = "../md-test"
+MDROOT = "/Users/rishi/Code/cookiejar/markpi/md-test"
 
 
 def list_markdown_files():
