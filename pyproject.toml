@@ -24,6 +24,8 @@ torchsummary = "^1.5.1"
 holoviews = "^1.19.1"
 bokeh = "^3.5.1"
 matplotlib = "^3.9.1"
+pygments = "^2.18.0"
+regex = "^2024.7.24"
 
 [tool.poetry.group.dev.dependencies]
 basedpyright = "*"

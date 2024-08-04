@@ -5,7 +5,15 @@ import markpi.funcs as F
 import json
 
 # Configure CORS middleware
-cors = CORS(allow_all_origins=True)
+cors = CORS(
+    allow_origins_list=[
+        "http://localhost:5173"
+    ],  # Replace with your SvelteKit dev server port
+    allow_all_headers=True,
+    allow_all_methods=True,
+)
+
+
 app = application = falcon.App(middleware=[cors.middleware])
 
 # Configure Loguru logger
@@ -78,9 +86,20 @@ class NoteToCResource:
             resp.status = falcon.HTTP_404
 
 
+class NoteSearch:
+    def on_get(self, req, resp, query):
+        logger.info(f"NoteSearch GET request received with query: {query}")
+        matches = F.search(query)
+
+        resp.text = matches.model_dump_json()
+        resp.content_type = falcon.MEDIA_JSON
+        resp.status = falcon.HTTP_200
+
+
 # Routes
 app.add_route("/hello", HelloWorld())
 app.add_route("/notes/ls", NotesListResource())
 app.add_route("/notes/{title}", NoteResource())
 app.add_route("/notes/{title}/meta", NoteMetadataResource())
 app.add_route("/notes/{title}/toc", NoteToCResource())
+app.add_route("/notes/search/{query}", NoteSearch())

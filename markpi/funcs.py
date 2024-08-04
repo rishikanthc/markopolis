@@ -1,4 +1,5 @@
 from .data_dantic import (
+    NoteSearch,
     NoteMeta,
     NoteContent,
     ToCItem,
@@ -6,12 +7,7 @@ from .data_dantic import (
     MarkdownFileList,
     Error,
 )
-from .md import (
-    list_markdown_files,
-    get_meta,
-    get_note_content,
-    get_toc,
-)
+from .md import list_markdown_files, get_meta, get_note_content, get_toc, fuzzy_search
 from loguru import logger
 
 __all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
@@ -69,3 +65,8 @@ def get_headings(note_title):
         return Error(message=error)
     else:
         logger.error("Something bad happened")
+
+
+def search(query):
+    matches = fuzzy_search(query, 2)
+    return NoteSearch(matches=matches)

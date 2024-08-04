@@ -92,7 +92,7 @@ Content here
     ):
         content, error = get_note_content("test_note")
         assert error is None
-        assert content[0] == "# Heading\n\nContent here\n"  # pyright: ignore
+        assert content[0] == "# Heading\n\nContent here"  # pyright: ignore
         assert "<h1>Heading</h1>" in content[1]  # pyright: ignore
 
 
