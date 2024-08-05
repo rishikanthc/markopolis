@@ -6,8 +6,17 @@ from .data_dantic import (
     ToC,
     MarkdownFileList,
     Error,
+    Backlink,
+    BacklinkList,
 )
-from .md import list_markdown_files, get_meta, get_note_content, get_toc, fuzzy_search
+from .md import (
+    list_markdown_files,
+    get_meta,
+    get_note_content,
+    get_toc,
+    fuzzy_search,
+    get_backlinks_slow,
+)
 from loguru import logger
 
 __all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
@@ -67,6 +76,19 @@ def get_headings(note_title):
         logger.error("Something bad happened")
 
 
-def search(query):
-    matches = fuzzy_search(query, 2)
+def search(query, max_dist):
+    matches = fuzzy_search(query, max_dist)
     return NoteSearch(matches=matches)
+
+
+def get_backlinks(note_title):
+    backlinks, error = get_backlinks_slow(note_title)
+
+    if backlinks is not None:
+        blinks = [
+            Backlink(title=b.split(".")[0].replace("-", " "), link=b.split(".")[0])
+            for b in backlinks
+        ]
+        return BacklinkList(backlinks=blinks)
+    elif error is not None:
+        return Error(message=error)

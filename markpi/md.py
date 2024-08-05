@@ -1,9 +1,9 @@
 import os
 import markdown
+from markdown.extensions.wikilinks import WikiLinkExtension
 import regex as mre
 import yaml
 import re
-from collections import defaultdict
 
 MDROOT = "/Users/rishi/Code/cookiejar/markpi/md-test"
 
@@ -65,7 +65,13 @@ def get_note_content(note_title):
             markdown_content = content
 
         # Configure Markdown parser with extensions
-        md = markdown.Markdown(extensions=["fenced_code", "codehilite"])
+        md = markdown.Markdown(
+            extensions=[
+                "fenced_code",
+                "codehilite",
+                WikiLinkExtension(base_url="/", end_url=""),
+            ]
+        )
 
         # Convert Markdown to HTML
         html_content = md.convert(markdown_content)
@@ -75,46 +81,44 @@ def get_note_content(note_title):
         return None, f"Error reading or processing file: {e}"
 
 
-def get_toc(note_title):
+def get_toc(note_title: str) -> tuple[None | dict[str, dict], None | str]:
     if not note_title or not isinstance(note_title, str):
         return None, "Invalid note title"
-
     note_path = os.path.join(MDROOT, note_title + ".md")
     if not os.path.exists(note_path):
         return None, f"The file {note_path} does not exist."
-
     try:
         with open(note_path, "r") as file:
-            lines = file.readlines()
-            content_lines = []
-            in_front_matter = False
-            for line in lines:
-                if line.strip() == "---":
-                    in_front_matter = not in_front_matter
-                    continue
-                if not in_front_matter:
-                    content_lines.append(line)
-            headings = []
-            heading_pattern = re.compile(r"^(#{1,6})\s+(.*)")
-            for line in content_lines:
-                match = heading_pattern.match(line)
-                if match:
-                    level = len(match.group(1))
-                    title = match.group(2).strip()
-                    if title:
-                        headings.append((level, title))
-            toc = defaultdict(dict)
+            content = file.read()
 
-            def add_to_toc(toc, level, title):
-                if level == 1:
-                    toc[title] = {}
-                else:
-                    for key in toc:
-                        add_to_toc(toc[key], level - 1, title)
+        # Remove front matter
+        content_parts = content.split("---", 2)
+        if len(content_parts) >= 3:
+            content = content_parts[2]
 
-            for level, title in headings:
-                add_to_toc(toc, level, title)
-            return dict(toc), None
+        # Extract headings
+        heading_pattern = re.compile(r"^(#{1,6})\s+(.*?)$", re.MULTILINE)
+        headings = [
+            (len(match.group(1)), match.group(2).strip())
+            for match in heading_pattern.finditer(content)
+        ]
+
+        # Build TOC
+        toc: dict[str, dict] = {}
+        current_levels: dict[int, dict] = {0: toc}
+
+        for level, title in headings:
+            new_dict: dict[str, dict] = {}
+            parent_level = max(k for k in current_levels.keys() if k < level)
+            current_levels[parent_level][title] = new_dict
+            current_levels[level] = new_dict
+
+            # Clear any deeper levels
+            for lvl in list(current_levels.keys()):
+                if lvl > level:
+                    del current_levels[lvl]
+
+        return toc, None
     except Exception as e:
         return None, f"Error processing file: {e}"
 
@@ -165,4 +169,4 @@ def fuzzy_search(search_term, max_dist=2):
     sorted_matches = sorted(matches_with_distances, key=lambda x: x[1])
 
     # Return only the file names, now sorted by closeness
-    return [match[0] for match in sorted_matches]
+    return [match[0].split(".")[0] for match in sorted_matches]

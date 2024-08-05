@@ -89,11 +89,22 @@ class NoteToCResource:
 class NoteSearch:
     def on_get(self, req, resp, query):
         logger.info(f"NoteSearch GET request received with query: {query}")
-        matches = F.search(query)
+        matches = F.search(query, 1)
 
         resp.text = matches.model_dump_json()
         resp.content_type = falcon.MEDIA_JSON
         resp.status = falcon.HTTP_200
+
+
+class NoteBacklinks:
+    def on_get(self, req, resp, title):
+        logger.info(f"NoteBacklinks GET request received with query: {title}")
+        backlinks = F.get_backlinks(title)
+
+        if backlinks is not None:
+            resp.text = backlinks.model_dump_json()
+            resp.content_type = falcon.MEDIA_JSON
+            resp.status = falcon.HTTP_200
 
 
 # Routes
@@ -103,3 +114,4 @@ app.add_route("/notes/{title}", NoteResource())
 app.add_route("/notes/{title}/meta", NoteMetadataResource())
 app.add_route("/notes/{title}/toc", NoteToCResource())
 app.add_route("/notes/search/{query}", NoteSearch())
+app.add_route("/notes/{title}/backlinks", NoteBacklinks())
