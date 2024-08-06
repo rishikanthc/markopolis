@@ -4,6 +4,7 @@ from falcon_cors import CORS
 import markpi.funcs as F
 import json
 from markpi import settings
+import sys
 
 # Configure CORS middleware
 cors = CORS(
@@ -18,7 +19,7 @@ cors = CORS(
 app = application = falcon.App(middleware=[cors.middleware])
 
 # Configure Loguru logger
-logger.add("stdout", format="{time} {level} {message}", level="INFO")
+logger.add(sys.stdout, format="{time} {level} {message}", level="INFO")
 
 
 class HelloWorld:

@@ -4,8 +4,9 @@ from markdown.extensions.wikilinks import WikiLinkExtension
 import regex as mre
 import yaml
 import re
+from .config import settings
 
-MDROOT = "/Users/rishi/Code/cookiejar/markpi/md-test"
+MDROOT = settings.md_path
 
 
 def list_markdown_files():
