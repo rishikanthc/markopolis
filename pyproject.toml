@@ -2,7 +2,7 @@
 name = "markpi"
 version = "0.1.0"
 description = "Markdown Programmable interface"
-authors = ["rishikanthc <r3chandr@ucsd.edu>"]
+authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -15,17 +15,9 @@ fire = "^0.6.0"
 gunicorn = "^22.0.0"
 falcon-cors = "^1.1.7"
 pydantic = "^2.8.2"
-numpy = "^2.0.1"
-torch = "^2.4.0"
-scikit-learn = "^1.5.1"
-networkx = "^3.3"
-torchmetrics = "^1.4.0.post0"
-torchsummary = "^1.5.1"
-holoviews = "^1.19.1"
-bokeh = "^3.5.1"
-matplotlib = "^3.9.1"
 pygments = "^2.18.0"
 regex = "^2024.7.24"
+dynaconf = "^3.2.6"
 
 [tool.poetry.group.dev.dependencies]
 basedpyright = "*"

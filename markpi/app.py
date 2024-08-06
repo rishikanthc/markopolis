@@ -3,11 +3,12 @@ from loguru import logger
 from falcon_cors import CORS
 import markpi.funcs as F
 import json
+from markpi import settings
 
 # Configure CORS middleware
 cors = CORS(
     allow_origins_list=[
-        "http://localhost:5173"
+        settings.frontend_url + f":{settings.frontend_port}"
     ],  # Replace with your SvelteKit dev server port
     allow_all_headers=True,
     allow_all_methods=True,
