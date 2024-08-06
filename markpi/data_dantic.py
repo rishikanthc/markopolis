@@ -59,3 +59,7 @@ class BacklinkList(BaseModel):
 
 class MarkdownFileList(BaseModel):
     files: List[str]
+
+
+class Raw(BaseModel):
+    contents: str

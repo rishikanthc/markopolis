@@ -109,6 +109,16 @@ class NoteBacklinks:
             resp.status = falcon.HTTP_200
 
 
+class NoteRaw:
+    def on_get(self, req, resp, title):
+        logger.info(f"NoteRaw GET request received with {title}")
+        contents = F.get_raw(title)
+
+        resp.text = contents.model_dump_json()
+        resp.content_type = falcon.MEDIA_JSON
+        resp.status = falcon.HTTP_200
+
+
 # Routes
 app.add_route("/hello", HelloWorld())
 app.add_route("/notes/ls", NotesListResource())
@@ -117,3 +127,4 @@ app.add_route("/notes/{title}/meta", NoteMetadataResource())
 app.add_route("/notes/{title}/toc", NoteToCResource())
 app.add_route("/notes/search/{query}", NoteSearch())
 app.add_route("/notes/{title}/backlinks", NoteBacklinks())
+app.add_route("/notes/{title}/raw", NoteRaw())

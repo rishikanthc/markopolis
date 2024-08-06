@@ -71,6 +71,7 @@ def get_note_content(note_title):
                 "fenced_code",
                 "codehilite",
                 WikiLinkExtension(base_url="/", end_url=""),
+                "mdx_math",
             ]
         )
 
@@ -171,3 +172,20 @@ def fuzzy_search(search_term, max_dist=2):
 
     # Return only the file names, now sorted by closeness
     return [match[0].split(".")[0] for match in sorted_matches]
+
+
+def raw(note_title):
+    file_path = os.path.join(MDROOT, f"{note_title}.md")
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            content = file.read()
+        return content, ""
+    except FileNotFoundError:
+        return (
+            None,
+            f"Error: File '{note_title}.md' not found in the specified directory.",
+        )
+    except IOError:
+        return None, f"Error: Unable to read the file '{note_title}.md'."
+    except Exception as e:
+        return None, f"Unexpected error: {str(e)}"

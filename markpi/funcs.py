@@ -8,6 +8,7 @@ from .data_dantic import (
     Error,
     Backlink,
     BacklinkList,
+    Raw,
 )
 from .md import (
     list_markdown_files,
@@ -16,6 +17,7 @@ from .md import (
     get_toc,
     fuzzy_search,
     get_backlinks_slow,
+    raw,
 )
 from loguru import logger
 
@@ -92,3 +94,12 @@ def get_backlinks(note_title):
         return BacklinkList(backlinks=blinks)
     elif error is not None:
         return Error(message=error)
+
+
+def get_raw(note_title):
+    contents, error = raw(note_title)
+
+    if contents is not None:
+        return Raw(contents=contents)
+
+    return Raw(contents=error)
