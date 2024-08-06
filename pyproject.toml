@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Markdown Programmable interface"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.12"
