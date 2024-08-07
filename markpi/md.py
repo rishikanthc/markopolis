@@ -189,3 +189,26 @@ def raw(note_title):
         return None, f"Error: Unable to read the file '{note_title}.md'."
     except Exception as e:
         return None, f"Unexpected error: {str(e)}"
+
+
+def create_markdown_files(markdown_dict):
+    try:
+        # Create the output directory if it doesn't exist
+        os.makedirs(MDROOT, exist_ok=True)
+
+        for title, content in markdown_dict.items():
+            # Create a valid filename from the title
+            filename = f"{title.replace(' ', '_').lower()}.md"
+            file_path = os.path.join(MDROOT, filename)
+
+            # Write the content to the file
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        print(
+            f"Created {len(markdown_dict)} markdown files in the '{MDROOT}' directory."
+        )
+        return 200  # Success
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return 500  # Internal Server Error

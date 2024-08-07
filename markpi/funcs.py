@@ -9,6 +9,7 @@ from .data_dantic import (
     Backlink,
     BacklinkList,
     Raw,
+    Status,
 )
 from .md import (
     list_markdown_files,
@@ -18,6 +19,7 @@ from .md import (
     fuzzy_search,
     get_backlinks_slow,
     raw,
+    create_markdown_files,
 )
 
 __all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
@@ -93,3 +95,9 @@ def get_raw(note_title):
         return Raw(contents=contents)
 
     return Raw(contents=error)
+
+
+def write_files(md_dict):
+    result = create_markdown_files(md_dict)
+
+    return Status(status=result)

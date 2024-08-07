@@ -149,6 +149,41 @@ class NoteRaw:
         resp.status = falcon.HTTP_200
 
 
+class WriteNotesResource:
+    @auth_required
+    def on_post(self, req, resp):
+        logger.info("WriteNotesResource POST request received")
+
+        # Ensure the request has a JSON body
+        if not req.content_type or "application/json" not in req.content_type:
+            raise falcon.HTTPBadRequest("Invalid request", "Request must be JSON")
+
+        try:
+            md_dict = req.media
+        except json.JSONDecodeError:
+            raise falcon.HTTPBadRequest("Invalid JSON", "Could not decode request body")
+
+        # Validate the input
+        if not isinstance(md_dict, dict) or not all(
+            isinstance(k, str) and isinstance(v, str) for k, v in md_dict.items()
+        ):
+            raise falcon.HTTPBadRequest(
+                "Invalid input",
+                "Input must be a dictionary with string keys and values",
+            )
+
+        # Call the write_files function
+        result = F.write_files(md_dict)
+
+        # Check the result and set the response accordingly
+        if result.status == 200:
+            resp.status = falcon.HTTP_OK
+            resp.media = {"message": "Files created successfully"}
+        else:
+            resp.status = falcon.HTTP_INTERNAL_SERVER_ERROR
+            resp.media = {"error": "Failed to create files"}
+
+
 # Routes
 app.add_route("/hello", HelloWorld())
 app.add_route("/notes/ls", NotesListResource())
@@ -158,3 +193,4 @@ app.add_route("/notes/{title}/toc", NoteToCResource())
 app.add_route("/notes/search/{query}", NoteSearch())
 app.add_route("/notes/{title}/backlinks", NoteBacklinks())
 app.add_route("/notes/{title}/raw", NoteRaw())
+app.add_route("/notes/write", WriteNotesResource())

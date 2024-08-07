@@ -7,6 +7,10 @@ class Error(BaseModel):
     message: str
 
 
+class Status(BaseModel):
+    status: int
+
+
 class NoteSearch(BaseModel):
     matches: list[str]
 

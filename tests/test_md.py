@@ -1,4 +1,5 @@
 import pytest
+import os
 from unittest.mock import mock_open, patch
 from datetime import date
 from markpi.md import (
@@ -7,6 +8,8 @@ from markpi.md import (
     get_note_content,
     get_toc,
     get_backlinks_slow,
+    create_markdown_files,
+    MDROOT,
 )
 
 
@@ -146,3 +149,39 @@ def test_get_backlinks_slow():
 
 
 # Add more tests as needed
+def test_create_markdown_files():
+    test_dict = {
+        "Test File 1": "# This is a test\nContent for file 1",
+        "Test File 2": "## Another test\nContent for file 2",
+    }
+
+    with patch("os.makedirs") as mock_makedirs, patch(
+        "builtins.open", mock_open()
+    ) as mock_file, patch("os.path.join", lambda *args: "/".join(args)):
+        status = create_markdown_files(test_dict)
+
+        # Check if the function returned success status
+        assert status == 200
+
+        # Check if os.makedirs was called with the correct argument
+        mock_makedirs.assert_called_once_with(MDROOT, exist_ok=True)
+
+        # Check if the correct number of files were "created"
+        assert mock_file.call_count == len(test_dict)
+
+        # Check if the files were "created" with the correct names and content
+        for title, content in test_dict.items():
+            filename = f"{title.replace(' ', '_').lower()}.md"
+            file_path = os.path.join(MDROOT, filename)
+            mock_file.assert_any_call(file_path, "w", encoding="utf-8")
+            mock_file().write.assert_any_call(content)
+
+
+def test_create_markdown_files_failure():
+    test_dict = {"Test File": "Content"}
+
+    with patch("os.makedirs", side_effect=PermissionError("Permission denied")):
+        status = create_markdown_files(test_dict)
+
+        # Check if the function returned failure status
+        assert status == 500
