@@ -21,7 +21,7 @@ def test_list_markdown_files(mock_md_files):
     ):
         files, error = list_markdown_files()
         assert files == ["file1", "file2", "file3"]
-        assert error is None
+        assert error == ""
 
 
 def test_list_markdown_files_directory_not_exists():
@@ -44,7 +44,7 @@ Content here
         "builtins.open", mock_open(read_data=mock_content)
     ):
         meta, error = get_meta("test_note")
-        assert error is None
+        assert error == ""
         print("Actual meta:", meta)  # Debug print
         assert "title" in meta  # pyright: ignore
         assert meta["title"] == "Test Note"  # pyright: ignore
@@ -62,7 +62,7 @@ def test_get_meta_no_frontmatter():
         "builtins.open", mock_open(read_data=mock_content)
     ):
         meta, error = get_meta("test_note")
-        assert error is None
+        assert error == ""
         assert meta == {}
 
 
@@ -91,7 +91,7 @@ Content here
         "builtins.open", mock_open(read_data=mock_content)
     ):
         content, error = get_note_content("test_note")
-        assert error is None
+        assert error == ""
         assert content[0] == "# Heading\n\nContent here"  # pyright: ignore
         assert "<h1>Heading</h1>" in content[1]  # pyright: ignore
 
@@ -110,7 +110,7 @@ frontmatter: here
         "builtins.open", mock_open(read_data=mock_content)
     ):
         toc, error = get_toc("test_note")
-        assert error is None
+        assert error == ""
         print("Actual ToC:", toc)  # Debug print
         assert "Heading 1" in toc  # pyright: ignore
         assert "Subheading 1.1" in toc["Heading 1"]  # pyright: ignore
@@ -141,7 +141,7 @@ def test_get_backlinks_slow():
         "os.path.join", lambda *args: args[-1]
     ), patch("builtins.open", mock_open_file):
         backlinks, error = get_backlinks_slow("test_note")
-        assert error is None
+        assert error == ""
         assert set(backlinks) == {"note1.md", "note3.md"}  # pyright: ignore
 
 

@@ -4,16 +4,44 @@ from falcon_cors import CORS
 import markpi.funcs as F
 import json
 from markpi import settings
+from functools import wraps
 import sys
 
+allowed_origins = [settings.frontend_url + f":{settings.frontend_port}"]
 # Configure CORS middleware
 cors = CORS(
-    allow_origins_list=[
-        settings.frontend_url + f":{settings.frontend_port}"
-    ],  # Replace with your SvelteKit dev server port
+    allow_origins_list=allowed_origins,  # Replace with your SvelteKit dev server port
     allow_all_headers=True,
     allow_all_methods=True,
 )
+
+
+class AuthMiddleware:
+    def process_request(self, req, resp):
+        api_key = req.get_header("X-API-Key")
+        if not api_key or not self.is_valid_api_key(api_key):
+            raise falcon.HTTPUnauthorized("Authentication required")
+
+    @staticmethod
+    def is_valid_api_key(api_key):
+        # Implement your API key validation logic here
+        # For example, check against a database or a predefined list
+        return api_key == settings.api_key  # Assume you've added this to your settings
+
+
+def auth_required(func):
+    @wraps(func)
+    def wrapper(self, req, resp, *args, **kwargs):
+        origin = req.get_header("Origin")
+        if origin and origin in allowed_origins:
+            return func(self, req, resp, *args, **kwargs)
+
+        api_key = req.get_header("X-API-Key")
+        if not api_key or not AuthMiddleware.is_valid_api_key(api_key):
+            raise falcon.HTTPUnauthorized("Authentication required")
+        return func(self, req, resp, *args, **kwargs)
+
+    return wrapper
 
 
 app = application = falcon.App(middleware=[cors.middleware])
@@ -23,6 +51,7 @@ logger.add(sys.stdout, format="{time} {level} {message}", level="INFO")
 
 
 class HelloWorld:
+    @auth_required
     def on_get(self, req, resp):
         """Handles GET requests"""
         logger.info("HelloWorldResource GET request received")
@@ -31,6 +60,7 @@ class HelloWorld:
 
 # API Resources
 class NotesListResource:
+    @auth_required
     def on_get(self, req, resp):
         logger.info("NotesListResource GET request received")
         notes = F.list_md()

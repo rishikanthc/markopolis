@@ -15,7 +15,7 @@ def list_markdown_files():
     files = [
         os.path.splitext(file)[0] for file in os.listdir(MDROOT) if file.endswith(".md")
     ]
-    return files, None
+    return files, ""
 
 
 def get_meta(note_title):
@@ -30,7 +30,7 @@ def get_meta(note_title):
         with open(note_path, "r") as file:
             lines = file.readlines()
             if not lines or lines[0].strip() != "---":
-                return {}, None  # Return empty dict if no front matter
+                return {}, ""  # Return empty dict if no front matter
             yaml_lines = []
             for line in lines[1:]:
                 if line.strip() == "---":
@@ -38,10 +38,10 @@ def get_meta(note_title):
                 yaml_lines.append(line)
             metadata = yaml.safe_load("".join(yaml_lines))
             if metadata is None:
-                return {}, None
+                return {}, ""
             if not isinstance(metadata, dict):
                 return None, "Invalid YAML structure: expected a dictionary"
-            return metadata, None
+            return metadata, ""
     except yaml.YAMLError as e:
         return None, f"Error parsing YAML front matter: {e}"
     except Exception as e:
@@ -78,7 +78,7 @@ def get_note_content(note_title):
         # Convert Markdown to HTML
         html_content = md.convert(markdown_content)
 
-        return (markdown_content, html_content), None
+        return (markdown_content, html_content), ""
     except Exception as e:
         return None, f"Error reading or processing file: {e}"
 
@@ -120,7 +120,7 @@ def get_toc(note_title: str) -> tuple[None | dict[str, dict], None | str]:
                 if lvl > level:
                     del current_levels[lvl]
 
-        return toc, None
+        return toc, ""
     except Exception as e:
         return None, f"Error processing file: {e}"
 
@@ -143,7 +143,7 @@ def get_backlinks_slow(note_title):
                         re.IGNORECASE,
                     ):
                         backlinks.append(filename)
-        return backlinks, None
+        return backlinks, ""
     except Exception as e:
         return None, f"Error processing backlinks: {e}"
 

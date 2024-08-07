@@ -19,7 +19,6 @@ from .md import (
     get_backlinks_slow,
     raw,
 )
-from loguru import logger
 
 __all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
 
@@ -29,10 +28,8 @@ def list_md():
 
     if files is not None:
         return MarkdownFileList(files=files)
-    elif error is not None:
-        return Error(message=error)
-    else:
-        logger.error("Something bad happened, both files and error was None")
+
+    return Error(message=error)
 
 
 def get_metadata(note_title):
@@ -42,10 +39,8 @@ def get_metadata(note_title):
         return NoteMeta(
             title=metadata["title"], date=metadata["date"], tags=metadata["tags"]
         )
-    elif error is not None:
-        return Error(message=error)
-    else:
-        logger.error("Something bad happened, both files and error was None")
+
+    return Error(message=error)
 
 
 def get_note(note_title):
@@ -53,11 +48,8 @@ def get_note(note_title):
 
     if content is not None:
         return NoteContent(markdown=content[0], html=content[1])
-    elif error is not None:
-        logger.error(f"{error}")
-        return Error(message=error)
-    else:
-        logger.error("Something bad happened")
+
+    return Error(message=error)
 
 
 def get_headings(note_title):
@@ -72,10 +64,8 @@ def get_headings(note_title):
     if toc is not None:
         headings = {k: create_toc_item(k, v) for k, v in toc.items()}
         return ToC(headings=headings)
-    elif error is not None:
-        return Error(message=error)
-    else:
-        logger.error("Something bad happened")
+
+    return Error(message=error)
 
 
 def search(query, max_dist):
@@ -92,8 +82,8 @@ def get_backlinks(note_title):
             for b in backlinks
         ]
         return BacklinkList(backlinks=blinks)
-    elif error is not None:
-        return Error(message=error)
+
+    return Error(message=error)
 
 
 def get_raw(note_title):
