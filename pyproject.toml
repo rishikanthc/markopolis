@@ -20,6 +20,7 @@ pygments = "^2.18.0"
 regex = "^2024.7.24"
 dynaconf = "^3.2.6"
 python-markdown-math = "^0.8"
+requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
 basedpyright = "*"
