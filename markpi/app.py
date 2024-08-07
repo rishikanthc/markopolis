@@ -129,7 +129,7 @@ class NoteRaw:
 
 class WriteNotesResource:
     @auth_required
-    def on_post(self, req, resp):
+    def on_put(self, req, resp):
         logger.info("WriteNotesResource POST request received")
 
         # Ensure the request has a JSON body

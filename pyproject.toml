@@ -21,6 +21,7 @@ regex = "^2024.7.24"
 dynaconf = "^3.2.6"
 python-markdown-math = "^0.8"
 requests = "^2.32.3"
+tqdm = "^4.66.5"
 
 [tool.poetry.group.dev.dependencies]
 basedpyright = "*"
@@ -53,4 +54,5 @@ reportImplicitStringConcatenation = "warning"
 diagnosticMode = "openFilesOnly"
 
 
-# [tool.poetry.scripts]
+[tool.poetry.scripts]
+consume = "markpi.scripts.consume:consume"

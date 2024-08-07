@@ -1,5 +1,7 @@
 default:
   frontend_url: http://localhost
   frontend_port: 5173
+  backend_url: http://localhost
+  backend_port: 8000
   md_path: /Users/rishi/Code/cookiejar/markPI/md-test
   api_key: test

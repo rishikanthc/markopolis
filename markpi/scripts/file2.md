@@ -1,0 +1,6 @@
+---
+publish: true
+
+---
+
+hello world
