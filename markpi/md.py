@@ -1,6 +1,8 @@
 import os
 import markdown
 from markdown.extensions.wikilinks import WikiLinkExtension
+from datetime import datetime
+import platform
 import regex as mre
 import yaml
 import re
@@ -18,6 +20,14 @@ def list_markdown_files():
     return files, ""
 
 
+def clean_filename(filename):
+    """Clean the filename to be used as a title."""
+    # Remove the .md extension
+    name = os.path.splitext(filename)[0]
+    # Replace hyphens with spaces and capitalize words
+    return " ".join(word.capitalize() for word in name.replace("-", " ").split())
+
+
 def get_meta(note_title):
     if not note_title or not isinstance(note_title, str):
         return None, "Invalid note title"
@@ -30,18 +40,41 @@ def get_meta(note_title):
         with open(note_path, "r") as file:
             lines = file.readlines()
             if not lines or lines[0].strip() != "---":
-                return {}, ""  # Return empty dict if no front matter
-            yaml_lines = []
-            for line in lines[1:]:
-                if line.strip() == "---":
-                    break
-                yaml_lines.append(line)
-            metadata = yaml.safe_load("".join(yaml_lines))
-            if metadata is None:
-                return {}, ""
-            if not isinstance(metadata, dict):
-                return None, "Invalid YAML structure: expected a dictionary"
-            return metadata, ""
+                metadata = {}  # No front matter, use empty dict
+            else:
+                yaml_lines = []
+                for line in lines[1:]:
+                    if line.strip() == "---":
+                        break
+                    yaml_lines.append(line)
+                metadata = yaml.safe_load("".join(yaml_lines))
+                if metadata is None:
+                    metadata = {}
+                if not isinstance(metadata, dict):
+                    return None, "Invalid YAML structure: expected a dictionary"
+
+        # Add default values for missing fields
+        if "title" not in metadata or not metadata["title"]:
+            metadata["title"] = clean_filename(os.path.basename(note_path))
+
+        if "tags" not in metadata:
+            metadata["tags"] = []
+        elif not isinstance(metadata["tags"], list):
+            metadata["tags"] = [metadata["tags"]]  # Convert to list if it's not already
+
+        if "date" not in metadata:
+            # Get file creation date
+            if platform.system() == "Windows":
+                creation_time = os.path.getctime(note_path)
+            else:  # Unix-based systems
+                stat = os.stat(note_path)
+                try:
+                    creation_time = stat.st_birthtime  # macOS
+                except AttributeError:
+                    creation_time = stat.st_mtime  # Linux and other Unix
+            metadata["date"] = datetime.fromtimestamp(creation_time).date()
+
+        return metadata, ""
     except yaml.YAMLError as e:
         return None, f"Error parsing YAML front matter: {e}"
     except Exception as e:

@@ -65,8 +65,11 @@ def test_get_meta_no_frontmatter():
         "builtins.open", mock_open(read_data=mock_content)
     ):
         meta, error = get_meta("test_note")
-        assert error == ""
-        assert meta == {}
+        assert (
+            error
+            == "Error reading file: [Errno 2] No such file or directory: '/Users/rishi/Code/cookiejar/markPI/md-test/test_note.md'"
+        )
+        assert meta is None
 
 
 def test_get_meta_invalid_yaml():

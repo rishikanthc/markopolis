@@ -10,6 +10,7 @@ from .data_dantic import (
     BacklinkList,
     Raw,
     Status,
+    Health,
 )
 from .md import (
     list_markdown_files,
@@ -31,7 +32,7 @@ def list_md():
     if files is not None:
         return MarkdownFileList(files=files)
 
-    return Error(message=error)
+    return Error(error=error)
 
 
 def get_metadata(note_title):
@@ -42,7 +43,7 @@ def get_metadata(note_title):
             title=metadata["title"], date=metadata["date"], tags=metadata["tags"]
         )
 
-    return Error(message=error)
+    return Error(error=error)
 
 
 def get_note(note_title):
@@ -51,7 +52,7 @@ def get_note(note_title):
     if content is not None:
         return NoteContent(markdown=content[0], html=content[1])
 
-    return Error(message=error)
+    return Error(error=error)
 
 
 def get_headings(note_title):
@@ -67,7 +68,7 @@ def get_headings(note_title):
         headings = {k: create_toc_item(k, v) for k, v in toc.items()}
         return ToC(headings=headings)
 
-    return Error(message=error)
+    return Error(error=error)
 
 
 def search(query, max_dist):
@@ -85,7 +86,7 @@ def get_backlinks(note_title):
         ]
         return BacklinkList(backlinks=blinks)
 
-    return Error(message=error)
+    return Error(error=error)
 
 
 def get_raw(note_title):
@@ -101,3 +102,7 @@ def write_files(md_dict):
     result = create_markdown_files(md_dict)
 
     return Status(status=result)
+
+
+def health():
+    return Health(status="healthy")

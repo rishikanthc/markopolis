@@ -18,7 +18,7 @@ class Settings:
             config_files.append(user_config_path)
 
         self._settings = Dynaconf(
-            envvar_prefix="MARKPI_CONFIG",
+            envvar_prefix="MARKPI",
             settings_files=config_files,
             environments=True,
             load_dotenv=True,

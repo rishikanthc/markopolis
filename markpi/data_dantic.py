@@ -4,7 +4,11 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class Error(BaseModel):
-    message: str
+    error: str
+
+
+class Health(BaseModel):
+    status: str
 
 
 class Status(BaseModel):

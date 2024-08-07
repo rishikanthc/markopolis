@@ -162,6 +162,16 @@ class WriteNotesResource:
             resp.media = {"error": "Failed to create files"}
 
 
+class HealthCheck:
+    def on_get(self, req, resp):
+        """Handle GET requests."""
+        health_status = F.health()
+
+        resp.status = falcon.HTTP_200
+        resp.content_type = falcon.MEDIA_JSON
+        resp.text = json.dumps(health_status)
+
+
 # Routes
 app.add_route("/hello", HelloWorld())
 app.add_route("/notes/ls", NotesListResource())
@@ -172,3 +182,4 @@ app.add_route("/notes/search/{query}", NoteSearch())
 app.add_route("/notes/{title}/backlinks", NoteBacklinks())
 app.add_route("/notes/{title}/raw", NoteRaw())
 app.add_route("/notes/write", WriteNotesResource())
+app.add_route("/healthcheck", HealthCheck())
