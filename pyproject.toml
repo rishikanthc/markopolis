@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "markpi"
+name = "noetly"
 version = "0.1.1"
 description = "Markdown Programmable interface"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
@@ -8,13 +8,10 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-falcon = "^3.1.3"
 pyyaml = "^6.0.1"
 markdown = "^3.6"
 loguru = "^0.7.2"
 fire = "^0.6.0"
-gunicorn = "^22.0.0"
-falcon-cors = "^1.1.7"
 pydantic = "^2.8.2"
 pygments = "^2.18.0"
 regex = "^2024.7.24"
@@ -22,6 +19,8 @@ dynaconf = "^3.2.6"
 python-markdown-math = "^0.8"
 requests = "^2.32.3"
 tqdm = "^4.66.5"
+jinja2 = "^3.1.4"
+fastapi = { extras = ["standard"], version = "^0.112.0" }
 
 [tool.poetry.group.dev.dependencies]
 basedpyright = "*"
@@ -55,4 +54,5 @@ diagnosticMode = "openFilesOnly"
 
 
 [tool.poetry.scripts]
-consume = "markpi.scripts.consume:consume"
+consume = "noetly.scripts.consume:consume"
+noetly = "noetly.fastapp:main"

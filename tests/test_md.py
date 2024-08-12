@@ -2,7 +2,7 @@ import pytest
 import os
 from unittest.mock import mock_open, patch
 from datetime import date
-from markpi.md import (
+from noetly.md import (
     list_markdown_files,
     get_meta,
     get_note_content,
@@ -67,7 +67,7 @@ def test_get_meta_no_frontmatter():
         meta, error = get_meta("test_note")
         assert (
             error
-            == "Error reading file: [Errno 2] No such file or directory: '/Users/rishi/Code/cookiejar/markPI/md-test/test_note.md'"
+            == "Error reading file: [Errno 2] No such file or directory: '/Users/rishi/Code/cookiejar/noetly/md-test/test_note.md'"
         )
         assert meta is None
 
