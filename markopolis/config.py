@@ -9,14 +9,14 @@ class Settings:
         default_settings = Path(__file__).parent / "default_config" / "settings.yaml"
 
         # Check for user-specified config file path in environment variable
-        user_config_path = os.getenv("NOETLY_CONFIG_PATH")
+        user_config_path = os.getenv("MARKOPOLIS_CONFIG_PATH")
 
         config_files = [str(default_settings)]
         if user_config_path:
             config_files.append(user_config_path)
 
         self._settings = Dynaconf(
-            envvar_prefix="NOETLY",
+            envvar_prefix="MARKOPOLIS",
             settings_files=config_files,
             environments=True,
             load_dotenv=True,

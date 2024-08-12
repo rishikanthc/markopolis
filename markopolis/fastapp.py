@@ -5,9 +5,9 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
-import noetly.funcs as F
-import noetly.data_dantic as D
-from noetly import settings
+import markopolis.funcs as F
+import markopolis.data_dantic as D
+from markopolis import settings
 import os
 import re
 from jinja2 import Environment, FileSystemLoader
@@ -26,8 +26,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/fonts", StaticFiles(directory="static/fonts/IBM_Plex"), name="fonts")
+package_dir = os.path.dirname(__file__)
+static_dir = os.path.join(package_dir, "static")
+fonts_dir = os.path.join(static_dir, "fonts/IBM_Plex")
+
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+app.mount("/fonts", StaticFiles(directory=fonts_dir), name="fonts")
 
 templates_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = Environment(loader=FileSystemLoader(templates_dir))
@@ -188,15 +192,15 @@ async def get_note_html(request: Request, title: str):
     )
 
 
-class NoetlyServer:
+class MarkopolisServer:
     @staticmethod
     def run(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):
         """Run the FastAPI server using Uvicorn."""
-        uvicorn.run("noetly.fastapp:app", host=host, port=port, reload=reload)
+        uvicorn.run("markopolis.fastapp:app", host=host, port=port, reload=reload)
 
 
 def main():
-    fire.Fire(NoetlyServer)
+    fire.Fire(MarkopolisServer)
 
 
 if __name__ == "__main__":

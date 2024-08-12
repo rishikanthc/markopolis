@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "noetly"
+name = "markopolis"
 version = "0.1.1"
 description = "Markdown Programmable interface"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
@@ -54,5 +54,5 @@ diagnosticMode = "openFilesOnly"
 
 
 [tool.poetry.scripts]
-consume = "noetly.scripts.consume:consume"
-noetly = "noetly.fastapp:main"
+consume = "markopolis.scripts.consume:consume"
+markopolis = "markopolis.fastapp:main"
