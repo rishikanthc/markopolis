@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello World</title>
+  <link rel="stylesheet" href="/static/fonts.css">
+  <link rel="stylesheet" href="/static/styles.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+    integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+
+  <!-- The loading of KaTeX is deferred to speed up page rendering -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+    integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
+    crossorigin="anonymous"></script>
+
+  <!-- To automatically render math in text elements, include the auto-render extension: -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
+    onload="renderMathInElement(document.body);"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+  <div class="main">
+    <div class="left">
+      <div class="bar">
+        <div class="logo">Noetly</div>
+        <div class="switcher">
+          <button id="theme-toggle">Dark Mode</button>
+        </div>
+      </div>
+      <!-- <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search notes...">
+        <div id="search-results"></div>
+      </div> -->
+      <div class="nav">
+        {% if posts %}
+        {% for post in posts %}
+        <div class="nav_item">
+          <a href="{{base_url}}/{{ post }}">{{ post }}</a>
+        </div>
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="right">
+      <div class="page">
+        <div class="page_left">
+          {% if meta %}
+          <div class="title">
+            <h1>{{ meta.title }}</h1>
+            <div class="tags">
+              {% for tag in meta.tags %}
+              <div class="tag">{{ tag }}</div>
+              {% endfor %}
+            </div>
+            <div class="date">
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="content">
+            {{ content | add_heading_ids | safe }}
+          </div>
+        </div>
+        <div class="page_right">
+          <div class="toc">
+            <h3>ON THIS PAGE</h3>
+            {% if toc %}
+            {% macro render_toc(items, level=0) %}
+            <div class="toc-level" style="padding-left: {{ 15 }}px;">
+              {% for key, item in items.items() %}
+              <div class="toc-item">
+                <a href="#{{ item.title | slugify }}">{{
+                  item.title }}</a>
+                {% if item.children %}
+                {{ render_toc(item.children, level + 1) }}
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endmacro %}
+
+            {{ render_toc(toc.headings) }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const tocItems = document.querySelectorAll('.toc-item a');
+        const sections = Array.from(tocItems).map(item => {
+          const targetId = item.getAttribute('href').substring(1);
+          return document.getElementById(targetId);
+        });
+
+        const pageLeft = document.querySelector('.page_left');
+        const sensitivityOffset = 200; // Adjust this value to change sensitivity
+
+        pageLeft.addEventListener('scroll', () => {
+          let currentActiveIndex = -1;
+
+          sections.forEach((section, index) => {
+            if (section) {
+              const rect = section.getBoundingClientRect();
+              const pageLeftRect = pageLeft.getBoundingClientRect();
+
+              // Adjust the top check by adding/subtracting sensitivityOffset
+              if (rect.top <= pageLeftRect.top + sensitivityOffset && (index === sections.length - 1 || sections[index + 1].getBoundingClientRect().top > pageLeftRect.top + sensitivityOffset)) {
+                currentActiveIndex = index;
+              }
+            }
+          });
+
+          tocItems.forEach((item, index) => {
+            if (index === currentActiveIndex) {
+              item.parentElement.classList.add('active');
+            } else {
+              item.parentElement.classList.remove('active');
+            }
+          });
+        });
+
+        // Real-time search functionality
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+
+        // Check if the search input exists before adding event listeners
+        if (searchInput) {
+          searchInput.addEventListener('input', async function () {
+            const query = searchInput.value.trim();
+            if (query.length > 0) {
+              const response = await fetch(`{{ base_url }}/notes/search/full/${query}`);
+              const results = await response.json();
+              searchResults.innerHTML = results.results.map(result => {
+                const fileNameWithoutExtension = result.file_name.replace(/\.md$/, '');
+                return `
+        <div class="search-result">
+          <a href="/${fileNameWithoutExtension}">
+            <strong>${fileNameWithoutExtension}</strong>: ${result.snippet}
+          </a>
+        </div>
+      `;
+              }).join('');
+              searchResults.style.display = 'block'; // Ensure the results are visible
+            } else {
+              searchResults.innerHTML = '';
+              searchResults.style.display = 'none'; // Hide the results if the query is empty
+            }
+          });
+
+          // Close the search results when clicking outside
+          document.addEventListener('click', function (event) {
+            if (!searchResults.contains(event.target) && !searchInput.contains(event.target)) {
+              searchResults.style.display = 'none'; // Hide the results
+            }
+          });
+
+          // Prevent closing search results when clicking inside the search bar or results
+          searchInput.addEventListener('click', function (event) {
+            event.stopPropagation(); // Prevent the event from bubbling up to the document
+          });
+        }
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggleButton = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+
+        // Apply the theme from localStorage
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        toggleButton.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+
+        toggleButton.addEventListener('click', () => {
+          let theme = document.documentElement.getAttribute('data-theme');
+          if (theme === 'dark') {
+            theme = 'light';
+            toggleButton.textContent = 'Dark Mode';
+          } else {
+            theme = 'dark';
+            toggleButton.textContent = 'Light Mode';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+          localStorage.setItem('theme', theme);
+        });
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Create and insert the command palette HTML structure
+        const commandPalette = document.createElement('div');
+        commandPalette.className = 'command-palette';
+        commandPalette.innerHTML = `
+    <input type="text" id="search-input" placeholder="Search notes...">
+    <div id="search-results"></div>
+  `;
+        document.body.appendChild(commandPalette);
+
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        let activeIndex = -1;
+
+        // Toggle the command palette visibility with Ctrl + K
+        document.addEventListener('keydown', function (event) {
+          if (event.ctrlKey && event.key === 'k') {
+            event.preventDefault(); // Prevent the default browser behavior
+            commandPalette.style.display = 'block';
+
+            // Focus the search input with a slight delay to ensure it's visible
+            setTimeout(() => {
+              searchInput.focus();
+            }, 10);
+          }
+        });
+
+        // Close the command palette when clicking outside or pressing Esc
+        document.addEventListener('click', function (event) {
+          if (!commandPalette.contains(event.target)) {
+            commandPalette.style.display = 'none';
+          }
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            commandPalette.style.display = 'none';
+          }
+        });
+
+        // Real-time search functionality
+        if (searchInput) {
+          searchInput.addEventListener('input', async function () {
+            const query = searchInput.value.trim();
+            if (query.length > 0) {
+              const response = await fetch(`{{base_url}}/notes/search/full/${query}`);
+              const results = await response.json();
+              searchResults.innerHTML = results.results.map(result => {
+                const fileNameWithoutExtension = result.file_name.replace(/\.md$/, '');
+                return `
+          <div class="search-result">
+            <a href="/${fileNameWithoutExtension}">
+              <strong>${fileNameWithoutExtension}</strong>: ${result.snippet}
+            </a>
+          </div>
+        `;
+              }).join('');
+              searchResults.style.display = 'block'; // Ensure the results are visible
+              activeIndex = -1; // Reset the active index when new results are loaded
+            } else {
+              searchResults.innerHTML = '';
+              searchResults.style.display = 'none'; // Hide the results if the query is empty
+            }
+          });
+
+          // Arrow key navigation
+          document.addEventListener('keydown', function (event) {
+            const results = document.querySelectorAll('.search-result');
+            if (commandPalette.style.display === 'block' && results.length > 0) {
+              if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                activeIndex = (activeIndex + 1) % results.length;
+                updateActiveResult(results);
+              } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                activeIndex = (activeIndex - 1 + results.length) % results.length;
+                updateActiveResult(results);
+              } else if (event.key === 'Enter' && activeIndex >= 0) {
+                results[activeIndex].querySelector('a').click();
+              }
+            }
+          });
+
+          function updateActiveResult(results) {
+            results.forEach((result, index) => {
+              if (index === activeIndex) {
+                result.classList.add('active-result');
+                result.scrollIntoView({block: 'nearest'});
+              } else {
+                result.classList.remove('active-result');
+              }
+            });
+          }
+
+          // Prevent closing the command palette when clicking inside the input or results
+          searchInput.addEventListener('click', function (event) {
+            event.stopPropagation(); // Prevent the event from bubbling up to the document
+          });
+        }
+      });
+    </script>
+</body>
+
+</html>
