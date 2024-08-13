@@ -100,10 +100,15 @@ async def get_note_metadata(
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@app.get("/notes/{title}/toc", response_model=D.ToC)
-async def get_note_toc(title: str):
-    logger.info(f"NoteToCResource GET request received for title: {title}")
-    return F.get_headings(title)
+@app.get("/notes/toc/{path:path}", response_model=D.ToC)
+async def get_note_toc(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+):
+    logger.info(f"NoteToCResource GET request received for path: {path}")
+    result = F.get_headings(path)
+    if isinstance(result, D.Error):
+        raise HTTPException(status_code=404, detail=result.error)
+    return result
 
 
 @app.get("/notes/search/{query}", response_model=D.NoteSearch)

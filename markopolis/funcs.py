@@ -63,8 +63,8 @@ def get_note(note_title):
     return Error(error=error)
 
 
-def get_headings(note_title):
-    toc, error = get_toc(note_title)
+def get_headings(note_path: str) -> ToC | Error:
+    toc, error = get_toc(note_path)
 
     def create_toc_item(title: str, children: dict) -> ToCItem:
         return ToCItem(
@@ -75,7 +75,6 @@ def get_headings(note_title):
     if toc is not None:
         headings = {k: create_toc_item(k, v) for k, v in toc.items()}
         return ToC(headings=headings)
-
     return Error(error=error)
 
 

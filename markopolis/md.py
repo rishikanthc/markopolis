@@ -140,43 +140,37 @@ def get_note_content(note_title):
         return None, f"Error reading or processing file: {e}"
 
 
-def get_toc(note_title: str) -> tuple[None | dict[str, dict], None | str]:
-    if not note_title or not isinstance(note_title, str):
-        return None, "Invalid note title"
-    note_path = os.path.join(MDROOT, note_title + ".md")
-    if not os.path.exists(note_path):
-        return None, f"The file {note_path} does not exist."
+def get_toc(note_path: str) -> Tuple[Optional[Dict[str, Dict]], Optional[str]]:
+    if not note_path or not isinstance(note_path, str):
+        return None, "Invalid note path"
+    full_note_path = os.path.join(MDROOT, note_path + ".md")
+    if not os.path.exists(full_note_path):
+        return None, f"The file {full_note_path} does not exist."
     try:
-        with open(note_path, "r") as file:
+        with open(full_note_path, "r") as file:
             content = file.read()
-
         # Remove front matter
         content_parts = content.split("---", 2)
         if len(content_parts) >= 3:
             content = content_parts[2]
-
         # Extract headings
         heading_pattern = re.compile(r"^(#{1,6})\s+(.*?)$", re.MULTILINE)
         headings = [
             (len(match.group(1)), match.group(2).strip())
             for match in heading_pattern.finditer(content)
         ]
-
         # Build TOC
-        toc: dict[str, dict] = {}
-        current_levels: dict[int, dict] = {0: toc}
-
+        toc: Dict[str, Dict] = {}
+        current_levels: Dict[int, Dict] = {0: toc}
         for level, title in headings:
-            new_dict: dict[str, dict] = {}
+            new_dict: Dict[str, Dict] = {}
             parent_level = max(k for k in current_levels.keys() if k < level)
             current_levels[parent_level][title] = new_dict
             current_levels[level] = new_dict
-
             # Clear any deeper levels
             for lvl in list(current_levels.keys()):
                 if lvl > level:
                     del current_levels[lvl]
-
         return toc, ""
     except Exception as e:
         return None, f"Error processing file: {e}"
