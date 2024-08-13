@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "markopolis"
-version = "0.1.1"
+version = "0.1.2"
 description = "Markdown Programmable interface"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
