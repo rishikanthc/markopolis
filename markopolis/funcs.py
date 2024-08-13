@@ -94,12 +94,10 @@ def get_backlinks(note_title):
     return Error(error=error)
 
 
-def get_raw(note_title):
-    contents, error = raw(note_title)
-
+def get_raw(note_path: str) -> "Raw":
+    contents, error = raw(note_path)
     if contents is not None:
         return Raw(contents=contents)
-
     return Raw(contents=error)
 
 

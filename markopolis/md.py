@@ -243,21 +243,27 @@ def fuzzy_search_in_text(search_term, max_dist=2):
         return []
 
 
-def raw(note_title):
-    file_path = os.path.join(MDROOT, f"{note_title}.md")
+def raw(note_path: str) -> Tuple[Optional[str], Optional[str]]:
+    # Remove any file extension if present
+    note_path = os.path.splitext(note_path)[0]
+    file_path = os.path.join(MDROOT, f"{note_path}.md")
+
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
-        return content, ""
+        return content, None
     except FileNotFoundError:
-        return (
-            None,
-            f"Error: File '{note_title}.md' not found in the specified directory.",
-        )
-    except IOError:
-        return None, f"Error: Unable to read the file '{note_title}.md'."
+        error_msg = f"Error: File '{file_path}' not found."
+        logger.error(error_msg)
+        return None, error_msg
+    except IOError as e:
+        error_msg = f"Error: Unable to read the file '{file_path}'. {str(e)}"
+        logger.error(error_msg)
+        return None, error_msg
     except Exception as e:
-        return None, f"Unexpected error: {str(e)}"
+        error_msg = f"Unexpected error reading '{file_path}': {str(e)}"
+        logger.error(error_msg)
+        return None, error_msg
 
 
 def create_markdown_files(markdown_dict):

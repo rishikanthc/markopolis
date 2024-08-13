@@ -132,10 +132,15 @@ async def get_note_backlinks(title: str):
     return F.get_backlinks(title)
 
 
-@app.get("/notes/{title}/raw", response_model=D.Raw)
-async def get_note_raw(title: str):
-    logger.info(f"NoteRaw GET request received with {title}")
-    return F.get_raw(title)
+@app.get("/notes/{path:path}/raw", response_model=D.Raw)
+async def get_note_raw(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+):
+    logger.info(f"NoteRaw GET request received for path: {path}")
+    result = F.get_raw(path)
+    if "Error:" in result.contents:
+        raise HTTPException(status_code=404, detail=result.contents)
+    return result
 
 
 @app.put("/notes/write")
