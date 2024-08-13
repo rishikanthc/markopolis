@@ -26,22 +26,42 @@
   <div class="main">
     <div class="left">
       <div class="bar">
-        <div class="logo">Noetly</div>
-        <div class="switcher">
+        <div class="logo"><a href="{{base_url}}/home">{{ title }}</a></div>
+        <!-- <div class="switcher">
           <button id="theme-toggle">Dark Mode</button>
+          <button id="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fas fa-sun"></i>
+            <i class="fas fa-moon"></i>
+          </button>
+        </div> -->
+      </div>
+      <div class="nav-wrapper">
+        <div class="nav">
+          {% if posts %}
+          {% for post in posts %}
+          <div class="nav_item">
+            <a href="{{base_url}}/{{ post }}">{{ post }}</a>
+          </div>
+          {% endfor %}
+          {% endif %}
         </div>
       </div>
-      <div class="nav">
-        {% if posts %}
-        {% for post in posts %}
-        <div class="nav_item">
-          <a href="{{base_url}}/{{ post }}">{{ post }}</a>
-        </div>
-        {% endfor %}
-        {% endif %}
+      <div class="search-hint">
+        <span class="shortcut-key">Ctrl+K</span> to search
       </div>
     </div>
     <div class="right">
+      <div class="top-bar">
+        <div class="switcher">
+          <div id="theme-switcher" class="switcher" role="button" tabindex="0" aria-label="Toggle dark mode">
+            <span id="theme-text">Dark mode</span>
+            <span class="theme-icon">
+              <i class="fas fa-sun"></i>
+              <i class="fas fa-moon"></i>
+            </span>
+          </div>
+        </div>
+      </div>
       <div class="page">
         <div class="page_left">
           {% if meta %}
@@ -63,8 +83,8 @@
         </div>
         <div class="page_right">
           <div class="toc">
-            <h3>ON THIS PAGE</h3>
             {% if toc %}
+            <h3>ON THIS PAGE</h3>
             {% macro render_toc(items, level=0) %}
             <div class="toc-level" style="padding-left: {{ 15 }}px;">
               {% for key, item in items.items() %}
@@ -79,6 +99,21 @@
             {% endmacro %}
 
             {{ render_toc(toc.headings) }}
+            {% endif %}
+          </div>
+          <div class="backlinks">
+
+            {% if backlinks and backlinks.backlinks %}
+            <h3>BACKLINKS</h3>
+            <div class="backlinks-container">
+              {% for backlink in backlinks.backlinks %}
+              <div class="backlink-item">
+                <a href="{{base_url}}/{{ backlink.link }}" rel="noopener noreferrer">
+                  {{ backlink.title }}
+                </a>
+              </div>
+              {% endfor %}
+            </div>
             {% endif %}
           </div>
         </div>
@@ -119,25 +154,40 @@
           });
         });
 
-        const toggleButton = document.getElementById('theme-toggle');
+        const themeSwitcher = document.getElementById('theme-switcher');
+        const themeText = document.getElementById('theme-text');
         const currentTheme = localStorage.getItem('theme') || 'light';
 
         document.documentElement.setAttribute('data-theme', currentTheme);
-        toggleButton.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+        updateThemeToggle(currentTheme);
 
-        toggleButton.addEventListener('click', () => {
-          let theme = document.documentElement.getAttribute('data-theme');
-          if (theme === 'dark') {
-            theme = 'light';
-            toggleButton.textContent = 'Dark Mode';
-          } else {
-            theme = 'dark';
-            toggleButton.textContent = 'Light Mode';
+        themeSwitcher.addEventListener('click', toggleTheme);
+        themeSwitcher.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggleTheme();
           }
-          document.documentElement.setAttribute('data-theme', theme);
-          localStorage.setItem('theme', theme);
         });
 
+        function toggleTheme() {
+          let theme = document.documentElement.getAttribute('data-theme');
+          theme = theme === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', theme);
+          localStorage.setItem('theme', theme);
+          updateThemeToggle(theme);
+        }
+
+        function updateThemeToggle(theme) {
+          if (theme === 'dark') {
+            themeSwitcher.classList.add('dark');
+            themeSwitcher.setAttribute('aria-label', 'Switch to light mode');
+            themeText.textContent = 'Light mode';
+          } else {
+            themeSwitcher.classList.remove('dark');
+            themeSwitcher.setAttribute('aria-label', 'Switch to dark mode');
+            themeText.textContent = 'Dark mode';
+          }
+        }
         // Create and insert the command palette HTML structure
         const commandPalette = document.createElement('div');
         commandPalette.className = 'command-palette';

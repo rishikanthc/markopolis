@@ -310,3 +310,10 @@
   font-weight: 100;
   font-style: italic;
 }
+
+@font-face {
+  font-family: "Megrim";
+  src: url("/fonts/Megrim-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}

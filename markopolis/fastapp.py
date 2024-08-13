@@ -200,6 +200,7 @@ async def get_note_html(request: Request, path: str):
         meta = F.get_metadata(path)
         content = F.get_note(path)
         toc = F.get_headings(path)
+        backlinks = F.get_backlinks(path)
 
         if isinstance(posts, D.Error):
             logger.warning(f"Error in posts: {posts.error}")
@@ -223,6 +224,12 @@ async def get_note_html(request: Request, path: str):
             logger.warning(f"Error in metadata: {meta.error}")
             meta = None
 
+        if isinstance(backlinks, D.Error):
+            logger.warning(f"Error in backlinks: {backlinks.error}")
+            backlinks = None
+        else:
+            backlinks = backlinks.model_dump()
+
         return templates.TemplateResponse(
             "page.html",
             {
@@ -233,6 +240,8 @@ async def get_note_html(request: Request, path: str):
                 "base_url": settings.domain,
                 "toc": toc,
                 "current_path": path,
+                "title": settings.title,
+                "backlinks": backlinks,
             },
         )
     except Exception as e:
