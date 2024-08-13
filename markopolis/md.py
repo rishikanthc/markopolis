@@ -281,7 +281,7 @@ def raw(note_path: str) -> Tuple[Optional[str], Optional[str]]:
         return None, error_msg
 
 
-def create_markdown_files(markdown_dict: Dict[str, str]) -> int:
+def create_markdown_files(markdown_dict):
     try:
         files_created = 0
         for path, content in markdown_dict.items():
