@@ -70,10 +70,10 @@ def consume(path: str = "."):
     :param path: Path to the folder containing markdown files (default: current directory)
     """
     # Import settings here to avoid circular imports
-    from noetly import settings
+    from markopolis import settings
 
     # Use settings for API URL and API key
-    api_url = settings.backend_url + f":{settings.backend_port}"
+    api_url = settings.domain
     api_key = settings.api_key
     folder_path = path
 
@@ -130,6 +130,10 @@ def consume(path: str = "."):
             )
 
     if to_publish:
+        # Create the payload in the correct format
+        payload = {"notes": to_publish}
+
+        logger.info(f"Payload: {payload}")
         try:
             # Create a new progress bar for uploading files
             with tqdm(
@@ -137,7 +141,7 @@ def consume(path: str = "."):
             ) as pbar:
                 response = requests.put(
                     f"{api_url}/notes/write",
-                    json=to_publish,
+                    json=payload,  # Send the correctly formatted payload
                     headers={"Content-Type": "application/json", "X-API-Key": api_key},
                 )
                 response.raise_for_status()
@@ -146,7 +150,10 @@ def consume(path: str = "."):
         except requests.RequestException as e:
             logger.error(f"Error sending data to the backend: {str(e)}")
             logger.error(f"Request URL: {api_url}/notes/write")
-            logger.error(f"Request payload: {to_publish.keys()}")
+            logger.error(f"Request payload: {payload}")
+            # If we get a 422 error, log the response content for more detail
+            if e.response is not None and e.response.status_code == 422:
+                logger.error(f"Validation error details: {e.response.text}")
     else:
         logger.info("No files need updating.")
 
