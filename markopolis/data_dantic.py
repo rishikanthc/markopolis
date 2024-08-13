@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
@@ -42,7 +42,8 @@ class NoteMeta(BaseModel):
     title: str
     date: Optional[datetime] = None
     tags: Optional[List[str]] = Field(default_factory=list)
-    custom_fields: Dict[str, str] = Field(default_factory=dict)
+    custom_fields: Dict[str, Any] = Field(default_factory=dict)  # Changed to Any
+    path: str
 
 
 class NoteContent(BaseModel):

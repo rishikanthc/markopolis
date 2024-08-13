@@ -133,7 +133,6 @@ def consume(path: str = "."):
         # Create the payload in the correct format
         payload = {"notes": to_publish}
 
-        logger.info(f"Payload: {payload}")
         try:
             # Create a new progress bar for uploading files
             with tqdm(

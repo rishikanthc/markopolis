@@ -38,14 +38,19 @@ def list_md():
     return Error(error=error)
 
 
-def get_metadata(note_title):
-    metadata, error = get_meta(note_title)
-
+def get_metadata(note_path: str) -> NoteMeta | Error:
+    metadata, error = get_meta(note_path)
     if metadata is not None:
-        return NoteMeta(
-            title=metadata["title"], date=metadata["date"], tags=metadata["tags"]
-        )
-
+        try:
+            return NoteMeta(
+                title=metadata["title"],
+                date=metadata["date"],
+                tags=metadata["tags"],
+                path=metadata["path"],
+                custom_fields=metadata.get("custom_fields", {}),
+            )
+        except ValueError as e:
+            return Error(error=f"Validation error: {str(e)}")
     return Error(error=error)
 
 

@@ -1,6 +1,6 @@
 import uvicorn
 import fire
-from fastapi import FastAPI, HTTPException, Depends, Header, Request
+from fastapi import FastAPI, HTTPException, Depends, Header, Request, Path
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -84,10 +84,20 @@ async def get_note(title: str):
     return F.get_note(title)
 
 
-@app.get("/notes/{title}/meta", response_model=D.NoteMeta)
-async def get_note_metadata(title: str):
-    logger.info(f"NoteMetadataResource GET request received for title: {title}")
-    return F.get_metadata(title)
+@app.get("/notes/meta/{path:path}", response_model=D.NoteMeta)
+async def get_note_metadata(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+    api_key: str = Depends(verify_api_key),
+):
+    logger.info(f"NoteMetadataResource GET request received for path: {path}")
+    try:
+        metadata = F.get_metadata(path)
+        if isinstance(metadata, D.Error):
+            raise HTTPException(status_code=404, detail=metadata.error)
+        return metadata
+    except Exception as e:
+        logger.error(f"Error retrieving metadata for path {path}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/notes/{title}/toc", response_model=D.ToC)

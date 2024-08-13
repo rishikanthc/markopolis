@@ -1,5 +1,6 @@
 import os
 import markdown
+from typing import Dict, Optional, Any, Tuple
 from markdown.extensions.wikilinks import WikiLinkExtension
 from datetime import datetime
 import platform
@@ -14,9 +15,17 @@ MDROOT = settings.md_path
 def list_markdown_files():
     if not os.path.exists(MDROOT):
         return None, f"The directory {MDROOT} does not exist."
-    files = [
-        os.path.splitext(file)[0] for file in os.listdir(MDROOT) if file.endswith(".md")
-    ]
+
+    files = []
+    for root, _, filenames in os.walk(MDROOT):
+        for filename in filenames:
+            if filename.endswith(".md"):
+                # Get the relative path from MDROOT
+                rel_path = os.path.relpath(os.path.join(root, filename), MDROOT)
+                # Remove the .md extension
+                rel_path_without_ext = os.path.splitext(rel_path)[0]
+                files.append(rel_path_without_ext)
+
     return files, ""
 
 
@@ -28,51 +37,66 @@ def clean_filename(filename):
     return " ".join(word.capitalize() for word in name.replace("-", " ").split())
 
 
-def get_meta(note_title):
-    if not note_title or not isinstance(note_title, str):
-        return None, "Invalid note title"
+def get_meta(note_path: str) -> Tuple[Optional[Dict[str, Any]], str]:
+    if not note_path or not isinstance(note_path, str):
+        return None, "Invalid note path"
 
-    note_path = os.path.join(MDROOT, note_title + ".md")
-    if not os.path.exists(note_path):
-        return None, f"The file {note_path} does not exist."
+    full_note_path = os.path.join(MDROOT, note_path + ".md")
+    if not os.path.exists(full_note_path):
+        return None, f"The file {full_note_path} does not exist."
 
     try:
-        with open(note_path, "r") as file:
-            lines = file.readlines()
-            if not lines or lines[0].strip() != "---":
-                metadata = {}  # No front matter, use empty dict
-            else:
-                yaml_lines = []
-                for line in lines[1:]:
-                    if line.strip() == "---":
-                        break
-                    yaml_lines.append(line)
-                metadata = yaml.safe_load("".join(yaml_lines))
+        with open(full_note_path, "r") as file:
+            content = file.read()
+            if content.strip().startswith("---"):
+                # Split the content at the second occurrence of "---"
+                _, front_matter, _ = content.split("---", 2)
+                metadata = yaml.safe_load(front_matter)
                 if metadata is None:
                     metadata = {}
                 if not isinstance(metadata, dict):
                     return None, "Invalid YAML structure: expected a dictionary"
+            else:
+                metadata = {}  # No front matter, use empty dict
 
         # Add default values for missing fields
         if "title" not in metadata or not metadata["title"]:
-            metadata["title"] = clean_filename(os.path.basename(note_path))
-
+            metadata["title"] = clean_filename(os.path.basename(full_note_path))
         if "tags" not in metadata:
             metadata["tags"] = []
         elif not isinstance(metadata["tags"], list):
             metadata["tags"] = [metadata["tags"]]  # Convert to list if it's not already
-
         if "date" not in metadata:
             # Get file creation date
             if platform.system() == "Windows":
-                creation_time = os.path.getctime(note_path)
+                creation_time = os.path.getctime(full_note_path)
             else:  # Unix-based systems
-                stat = os.stat(note_path)
+                stat = os.stat(full_note_path)
                 try:
                     creation_time = stat.st_birthtime  # macOS
                 except AttributeError:
                     creation_time = stat.st_mtime  # Linux and other Unix
-            metadata["date"] = datetime.fromtimestamp(creation_time).date()
+            metadata["date"] = datetime.fromtimestamp(creation_time)
+
+        # Add the relative path to the metadata
+        metadata["path"] = note_path
+
+        # Move any unrecognized fields to custom_fields
+        recognized_fields = {"title", "date", "tags", "path"}
+        custom_fields = {
+            k: v for k, v in metadata.items() if k not in recognized_fields
+        }
+
+        # Convert boolean values in custom_fields to strings
+        for key, value in custom_fields.items():
+            if isinstance(value, bool):
+                custom_fields[key] = str(value).lower()
+
+        # Remove custom fields from the main metadata dict and add them to custom_fields
+        for key in custom_fields:
+            metadata.pop(key, None)
+
+        metadata["custom_fields"] = custom_fields
 
         return metadata, ""
     except yaml.YAMLError as e:
