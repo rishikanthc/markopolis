@@ -1,6 +1,6 @@
 import os
 import markdown
-from typing import Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, List
 from markdown.extensions.wikilinks import WikiLinkExtension
 from datetime import datetime
 import platform
@@ -173,26 +173,41 @@ def get_toc(note_path: str) -> Tuple[Optional[Dict[str, Dict]], Optional[str]]:
         return None, f"Error processing file: {e}"
 
 
-def get_backlinks_slow(note_title):
-    if not note_title or not isinstance(note_title, str):
-        return None, "Invalid note title"
-
+def get_backlinks_slow(note_path: str) -> Tuple[Optional[List[str]], Optional[str]]:
+    if not note_path or not isinstance(note_path, str):
+        return None, "Invalid note path"
     try:
         backlinks = []
-        sanitized_title = re.escape(note_title.strip()).replace("\\ ", r"\s+")
-        for filename in os.listdir(MDROOT):
-            filename = filename.strip()
-            if filename.endswith(".md"):
-                with open(os.path.join(MDROOT, filename), "r") as file:
-                    content = file.read()
-                    if re.search(
-                        r"\[\[\s*" + sanitized_title + r"\s*(\|[^\]]+)?\s*\]\]",
-                        content,
-                        re.IGNORECASE,
-                    ):
-                        backlinks.append(filename)
+        note_name = os.path.basename(note_path)
+        note_name_without_ext = os.path.splitext(note_name)[0]
+
+        # Create different patterns to match various link formats
+        patterns = [
+            rf"\[\[\s*{re.escape(note_path)}\s*(\|[^\]]+)?\s*\]\]",  # Full path
+            rf"\[\[\s*{re.escape(note_name_without_ext)}\s*(\|[^\]]+)?\s*\]\]",  # Just the filename without extension
+            rf"\[.*\]\(.*{re.escape(note_path)}.*\)",  # Markdown link with full path
+            rf"\[.*\]\(.*{re.escape(note_name)}.*\)",  # Markdown link with filename
+        ]
+
+        for root, _, files in os.walk(MDROOT):
+            for filename in files:
+                if filename.endswith(".md"):
+                    file_path = os.path.join(root, filename)
+                    relative_path = os.path.relpath(file_path, MDROOT)
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                        for pattern in patterns:
+                            if re.search(pattern, content, re.IGNORECASE):
+                                backlinks.append(relative_path)
+                                logger.info(
+                                    f"Backlink found in {relative_path} for {note_path}"
+                                )
+                                break  # No need to check other patterns for this file
+
+        logger.info(f"Found {len(backlinks)} backlinks for {note_path}")
         return backlinks, ""
     except Exception as e:
+        logger.error(f"Error processing backlinks for {note_path}: {e}")
         return None, f"Error processing backlinks: {e}"
 
 

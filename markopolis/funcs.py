@@ -1,3 +1,5 @@
+import os
+from loguru import logger
 from .data_dantic import (
     NoteMeta,
     NoteContent,
@@ -81,17 +83,19 @@ def search_full(query, max_dist):
     return NoteSearchFull(results=results)
 
 
-def get_backlinks(note_title):
-    backlinks, error = get_backlinks_slow(note_title)
-
+def get_backlinks(note_path: str) -> BacklinkList:
+    backlinks, error = get_backlinks_slow(note_path)
     if backlinks is not None:
         blinks = [
-            Backlink(title=b.split(".")[0].replace("-", " "), link=b.split(".")[0])
+            Backlink(
+                title=os.path.splitext(b)[0],  # Remove only the file extension
+                link=os.path.splitext(b)[0],  # Keep the path structure
+            )
             for b in backlinks
         ]
         return BacklinkList(backlinks=blinks)
-
-    return Error(error=error)
+    logger.error(f"Error in get_backlinks: {error}")
+    return BacklinkList(backlinks=[])
 
 
 def get_raw(note_path: str) -> "Raw":

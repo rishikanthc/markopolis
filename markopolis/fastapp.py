@@ -126,10 +126,15 @@ async def search_notes_full_text(
     return results
 
 
-@app.get("/notes/{title}/backlinks", response_model=D.BacklinkList)
-async def get_note_backlinks(title: str):
-    logger.info(f"NoteBacklinks GET request received with query: {title}")
-    return F.get_backlinks(title)
+@app.get("/notes/{path:path}/backlinks", response_model=D.BacklinkList)
+async def get_note_backlinks(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+):
+    logger.info(f"NoteBacklinks GET request received for path: {path}")
+    result = F.get_backlinks(path)
+    if isinstance(result, D.BacklinkList):
+        return result
+    raise HTTPException(status_code=500, detail="Error retrieving backlinks")
 
 
 @app.get("/notes/{path:path}/raw", response_model=D.Raw)
