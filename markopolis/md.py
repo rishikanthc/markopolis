@@ -105,23 +105,21 @@ def get_meta(note_path: str) -> Tuple[Optional[Dict[str, Any]], str]:
         return None, f"Error reading file: {e}"
 
 
-def get_note_content(note_title):
-    if not note_title or not isinstance(note_title, str):
-        return None, "Invalid note title"
-    note_path = os.path.join(MDROOT, note_title + ".md")
-    if not os.path.exists(note_path):
-        return None, f"The file {note_path} does not exist."
+def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optional[str]]:
+    if not note_path or not isinstance(note_path, str):
+        return None, "Invalid note path"
+    full_note_path = os.path.join(MDROOT, note_path + ".md")
+    if not os.path.exists(full_note_path):
+        return None, f"The file {full_note_path} does not exist."
     try:
-        with open(note_path, "r") as file:
+        with open(full_note_path, "r") as file:
             content = file.read()
-
         # Split front matter and content
         parts = content.split("---", 2)
         if len(parts) >= 3:
             markdown_content = parts[2].strip()
         else:
             markdown_content = content
-
         # Configure Markdown parser with extensions
         md = markdown.Markdown(
             extensions=[
@@ -131,10 +129,8 @@ def get_note_content(note_title):
                 # "mdx_math",
             ]
         )
-
         # Convert Markdown to HTML
         html_content = md.convert(markdown_content)
-
         return (markdown_content, html_content), ""
     except Exception as e:
         return None, f"Error reading or processing file: {e}"

@@ -54,12 +54,10 @@ def get_metadata(note_path: str) -> NoteMeta | Error:
     return Error(error=error)
 
 
-def get_note(note_title):
-    content, error = get_note_content(note_title)
-
+def get_note(note_path: str) -> NoteContent | Error:
+    content, error = get_note_content(note_path)
     if content is not None:
         return NoteContent(markdown=content[0], html=content[1])
-
     return Error(error=error)
 
 

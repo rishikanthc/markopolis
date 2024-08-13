@@ -174,37 +174,53 @@ async def load_page(request: Request):
     )
 
 
-@app.get("/{title}", response_class=HTMLResponse)
-async def get_note_html(request: Request, title: str):
-    posts = F.list_md()
-    meta = F.get_metadata(title)
-    content = F.get_note(title)
-    toc = F.get_headings(title)
+@app.get("/{path:path}", response_class=HTMLResponse)
+async def get_note_html(request: Request, path: str):
+    logger.info(f"Accessing path: {path}")
 
-    if not isinstance(posts, D.Error):
-        posts = posts.files
-    else:
-        posts = []
+    try:
+        posts = F.list_md()
+        meta = F.get_metadata(path)
+        content = F.get_note(path)
+        toc = F.get_headings(path)
 
-    if not isinstance(content, D.Error):
-        content = content.html
-    else:
-        content = content.error
+        if isinstance(posts, D.Error):
+            logger.warning(f"Error in posts: {posts.error}")
+            posts = []
+        else:
+            posts = posts.files
 
-    if isinstance(toc, D.Error):
-        toc = toc.error
+        if isinstance(content, D.Error):
+            logger.error(f"Error in content: {content.error}")
+            raise HTTPException(
+                status_code=404, detail=f"Content not found: {content.error}"
+            )
+        else:
+            content = content.html
 
-    return templates.TemplateResponse(
-        "page.html",
-        {
-            "request": request,
-            "posts": posts,
-            "meta": meta,
-            "content": content,
-            "base_url": settings.domain,
-            "toc": toc,
-        },
-    )
+        if isinstance(toc, D.Error):
+            logger.warning(f"Error in TOC: {toc.error}")
+            toc = None
+
+        if isinstance(meta, D.Error):
+            logger.warning(f"Error in metadata: {meta.error}")
+            meta = None
+
+        return templates.TemplateResponse(
+            "page.html",
+            {
+                "request": request,
+                "posts": posts,
+                "meta": meta,
+                "content": content,
+                "base_url": settings.domain,
+                "toc": toc,
+                "current_path": path,
+            },
+        )
+    except Exception as e:
+        logger.exception(f"Unexpected error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 class MarkopolisServer:
