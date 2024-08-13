@@ -1,5 +1,4 @@
 from .data_dantic import (
-    NoteSearch,
     NoteMeta,
     NoteContent,
     ToCItem,
@@ -19,12 +18,12 @@ from .md import (
     get_meta,
     get_note_content,
     get_toc,
-    fuzzy_search,
     fuzzy_search_in_text,
     get_backlinks_slow,
     raw,
     create_markdown_files,
 )
+
 
 __all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
 
@@ -76,16 +75,10 @@ def get_headings(note_path: str) -> ToC | Error:
     return Error(error=error)
 
 
-def search(query, max_dist):
-    matches = fuzzy_search(query, max_dist)
-    return NoteSearch(matches=matches)
-
-
 def search_full(query, max_dist):
     matches = fuzzy_search_in_text(query, max_dist)
-    matches = [FuzzySearchResult(file_name=m[0], snippet=m[1]) for m in matches]
-
-    return NoteSearchFull(results=matches)
+    results = [FuzzySearchResult(file_path=m[0], snippet=m[1]) for m in matches]
+    return NoteSearchFull(results=results)
 
 
 def get_backlinks(note_title):

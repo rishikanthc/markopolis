@@ -1,6 +1,6 @@
 import uvicorn
 import fire
-from fastapi import FastAPI, HTTPException, Depends, Header, Request, Path
+from fastapi import FastAPI, HTTPException, Depends, Header, Request, Path, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -14,7 +14,7 @@ from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 import sys
 
-logger.add(sys.stdout, format="{time} {level} {message}", level="INFO")
+logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
 
 app = FastAPI()
 
@@ -111,16 +111,19 @@ async def get_note_toc(
     return result
 
 
-@app.get("/notes/search/{query}", response_model=D.NoteSearch)
-async def search_notes(query: str):
-    logger.info(f"NoteSearch GET request received with query: {query}")
-    return F.search(query, 1)
-
-
 @app.get("/notes/search/full/{query}", response_model=D.NoteSearchFull)
-async def search_notes_full_text(query: str):
-    logger.info(f"Full text search GET request received with query: {query}")
-    return F.search_full(query, 1)
+async def search_notes_full_text(
+    query: str = Path(..., description="The search query"),
+    max_dist: int = Query(
+        default=2, description="Maximum edit distance for fuzzy search"
+    ),
+):
+    logger.info(
+        f"Full text search GET request received with query: {query}, max_dist: {max_dist}"
+    )
+    results = F.search_full(query, max_dist)
+    logger.info(f"Search completed. Number of results: {len(results.results)}")
+    return results
 
 
 @app.get("/notes/{title}/backlinks", response_model=D.BacklinkList)

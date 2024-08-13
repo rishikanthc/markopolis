@@ -8,6 +8,7 @@ import regex as mre
 import yaml
 import re
 from .config import settings
+from loguru import logger
 
 MDROOT = settings.md_path
 
@@ -195,67 +196,51 @@ def get_backlinks_slow(note_title):
         return None, f"Error processing backlinks: {e}"
 
 
-def fuzzy_search(search_term, max_dist=2):
-    """
-    Perform a fuzzy search on a list of file names and return matches ordered by closeness.
-    :param search_term: The search term to find in the file names.
-    :param max_dist: The maximum Levenshtein distance for the fuzzy search.
-    :return: List of file names that match the search term, ordered by closeness.
-    """
-    file_names = os.listdir(MDROOT)
-    pattern = f"({search_term}){{e<={max_dist}}}"
-
-    # Find matches and their edit distances
-    matches_with_distances = []
-    for file_name in file_names:
-        match = mre.search(pattern, file_name, mre.BESTMATCH)
-        if match:
-            # Extract the edit distance from the match object
-            distance = match.fuzzy_counts[0]
-            matches_with_distances.append((file_name, distance))
-
-    # Sort matches by edit distance (lower distance means closer match)
-    sorted_matches = sorted(matches_with_distances, key=lambda x: x[1])
-
-    # Return only the file names, now sorted by closeness
-    return [match[0].split(".")[0] for match in sorted_matches]
-
-
 def fuzzy_search_in_text(search_term, max_dist=2):
     """
     Perform a fuzzy search on the contents of files and return matches ordered by closeness.
-    :param search_term: The search term to find in the file contents.
-    :param max_dist: The maximum Levenshtein distance for the fuzzy search.
-    :return: List of tuples (file name, snippet) that match the search term, ordered by closeness.
     """
-    file_names = os.listdir(MDROOT)
-    pattern = f"({search_term}){{e<={max_dist}}}"
+    logger.info(
+        f"Starting fuzzy search for term: {search_term} with max_dist: {max_dist}"
+    )
+    logger.info(f"MDROOT: {MDROOT}")
 
     matches_with_distances = []
+    pattern = f"({search_term}){{e<={max_dist}}}"
 
-    for file_name in file_names:
-        file_path = os.path.join(MDROOT, file_name)
-        if not os.path.isfile(file_path):
-            continue
+    try:
+        for root, _, files in os.walk(MDROOT):
+            for file_name in files:
+                if not file_name.endswith(".md"):
+                    continue
+                file_path = os.path.join(root, file_name)
+                relative_path = os.path.relpath(file_path, MDROOT)
 
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = file.read()
+                try:
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                        match = mre.search(pattern, content, mre.BESTMATCH)
+                        if match:
+                            distance = match.fuzzy_counts[0]
+                            snippet_start = max(match.start() - 30, 0)
+                            snippet_end = min(match.end() + 30, len(content))
+                            snippet = content[snippet_start:snippet_end]
+                            matches_with_distances.append(
+                                (
+                                    relative_path,
+                                    snippet,
+                                    distance,
+                                )
+                            )
+                except Exception as e:
+                    logger.error(f"Error reading file {file_path}: {str(e)}")
 
-            match = mre.search(pattern, content, mre.BESTMATCH)
-            if match:
-                # Extract the edit distance from the match object
-                distance = match.fuzzy_counts[0]
-                snippet_start = max(match.start() - 30, 0)
-                snippet_end = min(match.end() + 30, len(content))
-                snippet = content[snippet_start:snippet_end]
-
-                matches_with_distances.append((file_name, snippet, distance))
-
-    # Sort matches by edit distance (lower distance means closer match)
-    sorted_matches = sorted(matches_with_distances, key=lambda x: x[2])
-
-    # Return only the file names and snippets, now sorted by closeness
-    return [(match[0], match[1]) for match in sorted_matches]
+        sorted_matches = sorted(matches_with_distances, key=lambda x: x[2])
+        logger.info(f"Total matches found: {len(sorted_matches)}")
+        return [(match[0], match[1]) for match in sorted_matches]
+    except Exception as e:
+        logger.exception(f"Unexpected error in fuzzy search: {str(e)}")
+        return []
 
 
 def raw(note_title):
