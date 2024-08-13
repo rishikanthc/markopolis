@@ -281,24 +281,34 @@ def raw(note_path: str) -> Tuple[Optional[str], Optional[str]]:
         return None, error_msg
 
 
-def create_markdown_files(markdown_dict):
+def create_markdown_files(markdown_dict: Dict[str, str]) -> int:
     try:
-        # Create the output directory if it doesn't exist
-        os.makedirs(MDROOT, exist_ok=True)
+        files_created = 0
+        for path, content in markdown_dict.items():
+            # Normalize the path to handle different separators
+            normalized_path = os.path.normpath(path)
 
-        for title, content in markdown_dict.items():
-            # Create a valid filename from the title
-            filename = f"{title.replace(' ', '_').lower()}.md"
-            file_path = os.path.join(MDROOT, filename)
+            # Construct the full file path
+            file_path = os.path.join(MDROOT, normalized_path)
+
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+            # Add .md extension if not present
+            if not file_path.endswith(".md"):
+                file_path += ".md"
 
             # Write the content to the file
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
-        print(
-            f"Created {len(markdown_dict)} markdown files in the '{MDROOT}' directory."
+            files_created += 1
+            logger.info(f"Created file: {file_path}")
+
+        logger.info(
+            f"Created {files_created} markdown files in the '{MDROOT}' directory."
         )
         return 200  # Success
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        logger.error(f"An error occurred while creating markdown files: {str(e)}")
         return 500  # Internal Server Error

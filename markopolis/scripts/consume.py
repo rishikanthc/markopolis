@@ -34,11 +34,11 @@ def get_file_hash(content: str) -> str:
     return hashlib.md5(content.encode("utf-8")).hexdigest()
 
 
-def get_remote_content(api_url: str, api_key: str, title: str) -> Tuple[str, bool]:
+def get_remote_content(api_url: str, api_key: str, path: str) -> Tuple[str, bool]:
     """Get the content of a file from the server."""
     try:
         response = requests.get(
-            f"{api_url}/notes/{title}/raw", headers={"X-API-Key": api_key}
+            f"{api_url}/notes/{path}/raw", headers={"X-API-Key": api_key}
         )
         response.raise_for_status()
         data = response.json()
@@ -49,7 +49,7 @@ def get_remote_content(api_url: str, api_key: str, title: str) -> Tuple[str, boo
             return "", False
         return content, True
     except requests.RequestException as e:
-        logger.error(f"Error getting remote content for {title}: {str(e)}")
+        logger.error(f"Error getting remote content for {path}: {str(e)}")
         return "", False
 
 
@@ -61,6 +61,16 @@ def check_server_status(api_url: str, api_key: str) -> bool:
         return True
     except requests.RequestException:
         return False
+
+
+def get_markdown_files(folder_path: str) -> List[str]:
+    """Recursively get all markdown files in the given folder and its subfolders."""
+    markdown_files = []
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith(".md"):
+                markdown_files.append(os.path.join(root, file))
+    return markdown_files
 
 
 def consume(path: str = "."):
@@ -87,26 +97,27 @@ def consume(path: str = "."):
     to_publish: Dict[str, str] = {}
     files_without_frontmatter: List[str] = []
 
-    # Get list of markdown files in the specified folder
-    md_files = [f for f in os.listdir(folder_path) if f.endswith(".md")]
+    # Get list of markdown files in the specified folder and its subfolders
+    md_files = get_markdown_files(folder_path)
 
-    # Iterate through all files in the specified directory with progress bar
-    for filename in tqdm(md_files, desc="Processing files", unit="file"):
-        file_path = os.path.join(folder_path, filename)
+    # Iterate through all files with progress bar
+    for file_path in tqdm(md_files, desc="Processing files", unit="file"):
         local_content = read_markdown_file(file_path)
 
         frontmatter = parse_frontmatter(local_content)
         if frontmatter is None:
-            files_without_frontmatter.append(filename)
+            files_without_frontmatter.append(file_path)
             logger.warning(
-                f"File {filename} does not have valid frontmatter. Skipping."
+                f"File {file_path} does not have valid frontmatter. Skipping."
             )
             continue
 
         if frontmatter.get("publish", False):
-            logger.info(f"File {filename} has 'publish: true' in frontmatter.")
+            logger.info(f"File {file_path} has 'publish: true' in frontmatter.")
+            # Create relative path from the base folder
+            relative_path = os.path.relpath(file_path, folder_path)
             # Remove .md extension for the key
-            title = os.path.splitext(filename)[0]
+            title = os.path.splitext(relative_path)[0]
 
             # Get remote content
             remote_content, success = get_remote_content(api_url, api_key, title)
@@ -115,18 +126,20 @@ def consume(path: str = "."):
                 # Compare local and remote content
                 if get_file_hash(local_content) != get_file_hash(remote_content):
                     to_publish[title] = local_content
-                    logger.info(f"File {filename} marked for publishing (updated).")
+                    logger.info(
+                        f"File {relative_path} marked for publishing (updated)."
+                    )
                 else:
-                    logger.info(f"File {filename} is up to date. Skipping.")
+                    logger.info(f"File {relative_path} is up to date. Skipping.")
             else:
                 # If we couldn't get the remote content, assume it's a new file
                 to_publish[title] = local_content
                 logger.info(
-                    f"File {filename} marked for publishing (new or unable to fetch remote content)."
+                    f"File {relative_path} marked for publishing (new or unable to fetch remote content)."
                 )
         else:
             logger.info(
-                f"File {filename} does not have 'publish: true' in frontmatter. Skipping."
+                f"File {file_path} does not have 'publish: true' in frontmatter. Skipping."
             )
 
     if to_publish:
