@@ -523,6 +523,23 @@ docs = ["mdx-gh-links (>=0.2)", "mkdocs (>=1.5)", "mkdocs-gen-files", "mkdocs-li
 testing = ["coverage", "pyyaml"]
 
 [[package]]
+name = "markdown-checklist"
+version = "0.4.4"
+description = "Python Markdown extension for task lists with checkboxes"
+optional = false
+python-versions = "*"
+files = [
+    {file = "markdown-checklist-0.4.4.tar.gz", hash = "sha256:69c93850798b1e01cdc6fcd4a80592d941f669f6451bbf69c71a4ffd1142f849"},
+]
+
+[package.dependencies]
+markdown = "*"
+
+[package.extras]
+coverage = ["coverage", "figleaf"]
+testing = ["pytest"]
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -1541,4 +1558,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "fb6a05cb7fbaec2d58d94ca0ca2580cc13f889dd726fb22af26c872d0f3629d6"
+content-hash = "c70ab28c7671f8528878bd51de679e087cfb778e154c4f830dec0fe155ad8a23"

@@ -1,7 +1,4 @@
 default:
   domain: http://localhost:8000
-  frontend_url: http://localhost
-  frontend_port: 3000
-  md_path: /Users/rishi/Code/cookiejar/markopolis/md-test
   api_key: test
   title: Markopolis

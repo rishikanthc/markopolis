@@ -20,7 +20,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[f"{settings.frontend_url}:{settings.frontend_port}"],
+    allow_origins=[f"{settings.frontend_url}"],
     allow_credentials=True,
     allow_methods=["GET", "PUT"],
     allow_headers=["*"],
@@ -174,20 +174,50 @@ async def load_page(request: Request):
     posts = F.list_md()
     meta = F.get_metadata("home")
     content = F.get_note("home")
+    toc = F.get_headings("home")
+    backlinks = F.get_backlinks("home")
 
-    if not isinstance(posts, D.Error):
-        posts = posts.files
-    else:
+    if isinstance(posts, D.Error):
+        logger.warning(f"Error in posts: {posts.error}")
         posts = []
-
-    if not isinstance(content, D.Error):
-        content = content.html
     else:
-        content = "Error loading content"
+        posts = posts.files
+
+    if isinstance(content, D.Error):
+        logger.error(f"Error in content: {content.error}")
+        raise HTTPException(
+            status_code=404, detail=f"Content not found: {content.error}"
+        )
+    else:
+        content = content.html
+
+    if isinstance(toc, D.Error):
+        logger.warning(f"Error in TOC: {toc.error}")
+        toc = None
+
+    if isinstance(meta, D.Error):
+        logger.warning(f"Error in metadata: {meta.error}")
+        meta = None
+
+    if isinstance(backlinks, D.Error):
+        logger.warning(f"Error in backlinks: {backlinks.error}")
+        backlinks = None
+    else:
+        backlinks = backlinks.model_dump()
 
     return templates.TemplateResponse(
         "page.html",
-        {"request": request, "posts": posts, "meta": meta, "content": content},
+        {
+            "request": request,
+            "posts": posts,
+            "meta": meta,
+            "content": content,
+            "base_url": settings.domain,
+            "toc": toc,
+            "current_path": "home",
+            "title": settings.title,
+            "backlinks": backlinks,
+        },
     )
 
 
@@ -229,6 +259,8 @@ async def get_note_html(request: Request, path: str):
             backlinks = None
         else:
             backlinks = backlinks.model_dump()
+
+        logger.debug(f"{settings.title}")
 
         return templates.TemplateResponse(
             "page.html",

@@ -493,3 +493,62 @@ code {
   z-index: 1000;
   /* Ensure it stays on top of other content */
 }
+
+.checklist {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist li {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.checklist input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  position: relative;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+}
+
+.checklist input[type="checkbox"]:checked {
+  background-color: #2196f3;
+  background-color: var(--blue-05);
+  border-color: #2196f3;
+}
+
+.checklist input[type="checkbox"]:checked::after {
+  content: "\2714";
+  font-size: 14px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.checklist input[type="checkbox"]:hover {
+  border-color: #999;
+}
+
+.checklist li {
+  color: var(--text-primary);
+  font-size: 18px;
+}
+
+.checklist input[type="checkbox"]:disabled {
+  /* opacity: 0.6; */
+}
+
+.checklist input[type="checkbox"]:disabled + span {
+  color: #888;
+}

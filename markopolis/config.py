@@ -6,11 +6,12 @@ from dynaconf import Dynaconf
 class Settings:
     def __init__(self):
         super().__init__()
-        default_settings = Path(__file__).parent / "default_config" / "settings.yaml"
+        package_dir = Path(__file__).parent
+        default_settings = package_dir / "default_config" / "settings.yaml"
+        default_md_path = str(package_dir / "md")
 
         # Check for user-specified config file path in environment variable
         user_config_path = os.getenv("MARKOPOLIS_CONFIG_PATH")
-
         config_files = [str(default_settings)]
         if user_config_path:
             config_files.append(user_config_path)
@@ -20,11 +21,19 @@ class Settings:
             settings_files=config_files,
             environments=True,
             load_dotenv=True,
-            merge_enabled=True,  # This ensures that user config overrides default config
+            merge_enabled=True,
         )
+
+        # Set default md_path if not specified in config
+        if "md_path" not in self._settings:
+            self._settings.set("md_path", default_md_path)
 
     def __getattr__(self, name):
         return getattr(self._settings, name)
+
+    @property
+    def md_path(self):
+        return self._settings.get("md_path")
 
     @classmethod
     def get_instance(cls):

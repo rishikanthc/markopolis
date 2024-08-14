@@ -20,6 +20,13 @@
     onload="renderMathInElement(document.body);"></script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- Updated Highlight.js CSS links -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
+    id="light-theme">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css"
+    id="dark-theme" disabled>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
 
 <body>
@@ -27,13 +34,6 @@
     <div class="left">
       <div class="bar">
         <div class="logo"><a href="{{base_url}}/home">{{ title }}</a></div>
-        <!-- <div class="switcher">
-          <button id="theme-toggle">Dark Mode</button>
-          <button id="theme-toggle" aria-label="Toggle dark mode">
-            <i class="fas fa-sun"></i>
-            <i class="fas fa-moon"></i>
-          </button>
-        </div> -->
       </div>
       <div class="nav-wrapper">
         <div class="nav">
@@ -47,7 +47,7 @@
         </div>
       </div>
       <div class="search-hint">
-        <span class="shortcut-key">Ctrl+K</span> to search
+        <span class="shortcut-key">Press Ctrl+K</span> to search
       </div>
     </div>
     <div class="right">
@@ -102,7 +102,6 @@
             {% endif %}
           </div>
           <div class="backlinks">
-
             {% if backlinks and backlinks.backlinks %}
             <h3>BACKLINKS</h3>
             <div class="backlinks-container">
@@ -160,6 +159,7 @@
 
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateThemeToggle(currentTheme);
+        updateHighlightTheme(currentTheme);  // Initialize Highlight.js theme
 
         themeSwitcher.addEventListener('click', toggleTheme);
         themeSwitcher.addEventListener('keydown', function (e) {
@@ -169,12 +169,14 @@
           }
         });
 
+        // Updated theme switching functions
         function toggleTheme() {
           let theme = document.documentElement.getAttribute('data-theme');
           theme = theme === 'dark' ? 'light' : 'dark';
           document.documentElement.setAttribute('data-theme', theme);
           localStorage.setItem('theme', theme);
           updateThemeToggle(theme);
+          updateHighlightTheme(theme);
         }
 
         function updateThemeToggle(theme) {
@@ -188,6 +190,12 @@
             themeText.textContent = 'Dark mode';
           }
         }
+
+        function updateHighlightTheme(theme) {
+          document.getElementById('light-theme').disabled = (theme === 'dark');
+          document.getElementById('dark-theme').disabled = (theme === 'light');
+        }
+
         // Create and insert the command palette HTML structure
         const commandPalette = document.createElement('div');
         commandPalette.className = 'command-palette';
@@ -287,6 +295,7 @@
         }
       });
     </script>
+    <script>hljs.highlightAll();</script>
   </div>
 </body>
 

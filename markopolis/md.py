@@ -127,6 +127,7 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
                 "fenced_code",
                 "codehilite",
                 WikiLinkExtension(base_url="/", end_url=""),
+                "markdown_checklist.extension",
                 # "mdx_math",
             ]
         )
