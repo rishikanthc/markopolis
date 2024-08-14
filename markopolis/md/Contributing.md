@@ -1,3 +1,8 @@
+---
+publish: true
+tags:
+  - development
+---
 
 Contributions are most welcome. I am looking to add several features
 to this project and would appreciate any and all help I can get.

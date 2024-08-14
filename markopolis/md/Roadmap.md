@@ -1,3 +1,10 @@
+---
+publish: true
+tags:
+  - todo
+  - features
+---
+
 In no particular order, here are some of the features that are planned:
 
 - [ ] Support for Obsidian callouts.

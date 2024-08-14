@@ -22,16 +22,25 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[f"{settings.frontend_url}"],
     allow_credentials=True,
-    allow_methods=["GET", "PUT"],
+    allow_methods=["GET", "PUT", "OPTIONS"],
     allow_headers=["*"],
 )
 
 package_dir = os.path.dirname(__file__)
 static_dir = os.path.join(package_dir, "static")
 fonts_dir = os.path.join(static_dir, "fonts/IBM_Plex")
+img_dir = os.path.join(settings.md_path, "images")
+
+# Ensure that the image directory exists
+if not os.path.exists(img_dir):
+    os.makedirs(img_dir, exist_ok=True)
+    logger.info(f"Created missing image directory: {img_dir}")
+else:
+    logger.info(f"Image directory already exists: {img_dir}")
 
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 app.mount("/fonts", StaticFiles(directory=fonts_dir), name="fonts")
+app.mount("/images", StaticFiles(directory=img_dir), name="images")
 
 templates_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_env = Environment(loader=FileSystemLoader(templates_dir))
@@ -159,6 +168,22 @@ async def write_notes(notes: D.WriteNotesInput, api_key: str = Depends(verify_ap
             raise HTTPException(status_code=500, detail="Failed to create files")
     except Exception as e:
         logger.exception(f"Unexpected error in write_notes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@app.put("/notes/images/upload")
+async def upload_images(
+    images: D.WriteImagesInput, api_key: str = Depends(verify_api_key)
+):
+    logger.info("UploadImagesResource PUT request received")
+    try:
+        result = F.create_images_from_dict(images.images)
+        if result == 200:
+            return {"message": "Images uploaded successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to upload images")
+    except Exception as e:
+        logger.exception(f"Unexpected error in upload_images: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 

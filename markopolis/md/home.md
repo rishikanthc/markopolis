@@ -1,5 +1,10 @@
 ---
 title: Welcome to Markopolis
+publish: true
+tags:
+  - markdown
+  - webapp
+  - API
 ---
 
 ## Introduction

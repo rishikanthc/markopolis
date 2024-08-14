@@ -1,7 +1,9 @@
 import os
+import base64
 import markdown
 from typing import Dict, Optional, Any, Tuple, List
 from markdown.extensions.wikilinks import WikiLinkExtension
+from .md_extensions import ObsidianImageExtension
 from datetime import datetime
 import platform
 import regex as mre
@@ -128,6 +130,7 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
                 "codehilite",
                 WikiLinkExtension(base_url="/", end_url=""),
                 "markdown_checklist.extension",
+                ObsidianImageExtension(),
                 # "mdx_math",
             ]
         )
@@ -312,4 +315,38 @@ def create_markdown_files(markdown_dict):
         return 200  # Success
     except Exception as e:
         logger.error(f"An error occurred while creating markdown files: {str(e)}")
+        return 500  # Internal Server Error
+
+
+def create_images_from_dict(image_input: dict):
+    try:
+        files_created = 0
+        # Create an 'images' folder inside MDROOT if it doesn't exist
+        images_folder = os.path.join(MDROOT, "images")
+        os.makedirs(images_folder, exist_ok=True)
+
+        # Process each image in the input dictionary
+        for path, img_data in image_input.items():
+            # Get the image file name from the path
+            file_name = os.path.basename(path)
+
+            # Construct the full file path in the images folder
+            file_path = os.path.join(images_folder, file_name)
+
+            # Decode the base64 image data
+            img_bytes = base64.b64decode(img_data)
+
+            # Write the image to the file
+            with open(file_path, "wb") as f:
+                f.write(img_bytes)
+
+            files_created += 1
+            logger.info(f"Created image file: {file_path}")
+
+        logger.info(
+            f"Created {files_created} image files in the '{images_folder}' directory."
+        )
+        return 200  # Success
+    except Exception as e:
+        logger.error(f"An error occurred while creating image files: {str(e)}")
         return 500  # Internal Server Error

@@ -85,3 +85,7 @@ class Raw(BaseModel):
 
 class WriteNotesInput(BaseModel):
     notes: dict[str, str]
+
+
+class WriteImagesInput(BaseModel):
+    images: Dict[str, str]  # Dictionary of image paths and base64-encoded image data

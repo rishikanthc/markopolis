@@ -24,6 +24,7 @@ from .md import (
     get_backlinks_slow,
     raw,
     create_markdown_files,
+    create_images_from_dict,
 )
 
 
@@ -107,6 +108,12 @@ def get_raw(note_path: str) -> "Raw":
 
 def write_files(md_dict):
     result = create_markdown_files(md_dict)
+
+    return Status(status=result)
+
+
+def write_images(image_dict):
+    result = create_images_from_dict(image_dict)
 
     return Status(status=result)
 
