@@ -19,6 +19,9 @@ publish: true
 #### Heading 4
 ##### Heading 5
 
+## Horizontal line
+
+---
 
 ## Images
 
@@ -52,12 +55,29 @@ Image names should be unique. Duplicate images will be overwritten.
 
 This is a simple footnote[^1].
 
+You can also use inline footnotes. ^[This is an inline footnote.]
+
 ## Quotes
 
 > Human beings face ever more complex and urgent problems, and their effectiveness in dealing with these problems is a matter that is critical to the stability and continued progress of society.
 
 \- Doug Engelbart, 1961
 
+## Tables
+
+| First name | Last name |
+| ---------- | --------- |
+| Max        | Planck    |
+| Marie      | Curie     |
+
+The vertical bars on either side of the table are optional.
+
+Cells don't need to be perfectly aligned with the columns. Each header row must have at least two hyphens.
+
+First name | Last name
+-- | --
+Max | Planck
+Marie | Curie
 
 [^1]: This is the referenced text.
 [^2]: Add 2 spaces at the start of each new line.
