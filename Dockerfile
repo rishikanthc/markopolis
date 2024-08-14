@@ -1,6 +1,6 @@
 FROM python:3.12-alpine
 
-RUN pip install --no-cache-dir markopolis==0.1.5
+RUN pip install --no-cache-dir markopolis==0.1.6
 
 WORKDIR /app
 
