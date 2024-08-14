@@ -3,7 +3,12 @@ import base64
 import markdown
 from typing import Dict, Optional, Any, Tuple, List
 from markdown.extensions.wikilinks import WikiLinkExtension
-from .md_extensions import ObsidianImageExtension
+from .md_extensions import (
+    ObsidianImageExtension,
+    StrikethroughExtension,
+    HighlightExtension,
+    FootnoteExtension,
+)
 from datetime import datetime
 import platform
 import regex as mre
@@ -131,6 +136,9 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
                 WikiLinkExtension(base_url="/", end_url=""),
                 "markdown_checklist.extension",
                 ObsidianImageExtension(),
+                StrikethroughExtension(),
+                HighlightExtension(),
+                FootnoteExtension(),
                 # "mdx_math",
             ]
         )
