@@ -120,10 +120,19 @@ a:hover {
   gap: var(--spacing-10);
 }
 
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-10);
+}
+
 .right {
   grid-area: right;
   height: 100svh;
   overflow: hidden;
+  overflow-wrap: break-word; /* Handle overflow for long words */
+  word-break: break-word; /* Ensure long words break correctly */
 }
 
 .bar {
@@ -551,4 +560,143 @@ code {
 
 .checklist input[type="checkbox"]:disabled + span {
   color: #888;
+}
+
+.mobile-header {
+  display: none;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mobile-backlinks {
+  display: none;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .main {
+    grid-template-areas: "right";
+    grid-template-columns: 1fr;
+  }
+
+  .left {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    height: 100%;
+    width: 250px;
+    background-color: var(--layer-01);
+    z-index: 1000;
+    transition: left 0.3s ease;
+  }
+
+  .left.active {
+    left: 0;
+  }
+
+  .mobile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-03);
+    background-color: var(--layer-01);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+  }
+
+  .mobile-logo {
+    font-family: "Megrim";
+    font-size: 24px;
+  }
+
+  .mobile-logo a {
+    text-decoration: none;
+    color: var(--text-primary);
+  }
+
+  #menu-toggle,
+  #search-toggle {
+    background: none;
+    border: none;
+    font-size: var(--text-05);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .sidebar-content {
+    padding-top: 60px;
+  }
+
+  .right {
+    margin-top: 60px;
+    padding: 15px;
+  }
+
+  .page {
+    flex-direction: column;
+  }
+
+  .page_left {
+    width: 100%;
+    max-width: 100%;
+    padding: var(--spacing-03);
+  }
+
+  .page_right {
+    display: none;
+  }
+
+  .mobile-backlinks {
+    display: block;
+    margin-top: var(--spacing-07);
+  }
+
+  .command-palette {
+    top: 60px;
+    width: 90%;
+    max-width: none;
+    left: 5%;
+    transform: none;
+  }
+
+  .search-hint {
+    display: none;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .left {
+    width: 200px;
+  }
+
+  .page_right {
+    width: 100%;
+  }
+}
+
+/* Larger desktop styles */
+@media (min-width: 1025px) {
+  .main {
+    grid-template-columns: auto 3fr;
+  }
+}
+
+/* Ensure smooth transitions for resizing */
+.left,
+.right,
+.page_left,
+.page_right {
+  transition: all 0.3s ease;
 }
