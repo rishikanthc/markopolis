@@ -114,6 +114,16 @@ def get_meta(note_path: str) -> Tuple[Optional[Dict[str, Any]], str]:
 
 
 def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optional[str]]:
+    md_configs = {
+        "mdx_wikilink_plus": {
+            "base_url": f"{settings.domain}",
+            # "end_url": ".html",
+            # "url_case": "lowercase",
+            # "html_class": "a-custom-class",
+            #'build_url': build_url, # A callable
+            # all of the above config params are optional
+        },
+    }
     if not note_path or not isinstance(note_path, str):
         return None, "Invalid note path"
     full_note_path = os.path.join(MDROOT, note_path + ".md")
@@ -144,7 +154,8 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
                 MermaidExtension(),
                 CalloutExtension(),
                 # "mdx_math",
-            ]
+            ],
+            extension_configs=md_configs,
         )
         # Convert Markdown to HTML
         html_content = md.convert(markdown_content)
