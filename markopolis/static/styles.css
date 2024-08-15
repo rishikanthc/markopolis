@@ -15,6 +15,9 @@
   --tag-text: #161616;
   --nav: #893ffb;
 
+  --table-th: #e0e0e0;
+  --table-td: #f4f4f4;
+
   --yellow: #fedc69;
   --switcher: #161616;
   --scroll-color: #0e61fe;
@@ -78,6 +81,9 @@
   --separator: #393939;
   --nav: #009f9a;
   --switcher: #fedc69;
+
+  --table-th: #393939;
+  --table-td: #262626;
 
   --palette-background: #262626;
   --palette-border: #393939;
@@ -515,53 +521,51 @@ code {
   align-items: center;
 }
 
-.checklist input[type="checkbox"] {
+input[type="checkbox"] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ccc;
-  border-radius: 4px;
-  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--text-primary);
+  border-radius: 2px;
+  outline: none;
+  margin-right: 8px;
+  vertical-align: middle;
+  cursor: pointer;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked {
+  background-color: var(--text-primary);
   position: relative;
-  cursor: not-allowed;
-  transition: all 0.3s ease;
 }
 
-.checklist input[type="checkbox"]:checked {
-  background-color: #2196f3;
-  background-color: var(--blue-05);
-  border-color: #2196f3;
-}
-
-.checklist input[type="checkbox"]:checked::after {
-  content: "\2714";
-  font-size: 14px;
-  color: white;
+input[type="checkbox"]:checked::before {
+  content: "\2713";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  font-size: 12px;
+  color: var(--background);
 }
 
-.checklist input[type="checkbox"]:hover {
-  border-color: #999;
+/* Styling for labels next to checkboxes */
+input[type="checkbox"] + label {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #000;
+  cursor: pointer;
 }
 
-.checklist li {
-  color: var(--text-primary);
-  font-size: 18px;
+/* Improve checkbox and label alignment */
+input[type="checkbox"],
+input[type="checkbox"] + label {
+  display: inline-block;
+  vertical-align: middle;
 }
-
-.checklist input[type="checkbox"]:disabled {
-  /* opacity: 0.6; */
-}
-
-.checklist input[type="checkbox"]:disabled + span {
-  color: #888;
-}
-
 .mobile-header {
   display: none;
 }
@@ -644,7 +648,6 @@ code {
   }
 
   .page_left {
-    width: 100%;
     max-width: 100%;
     padding: var(--spacing-03);
   }
@@ -669,6 +672,43 @@ code {
   .search-hint {
     display: none;
   }
+}
+
+/* Exact Match Table Styling */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: Arial, sans-serif;
+  /* background-color: var(--layer-01); */
+}
+
+th,
+td {
+  padding: 10px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--table-th);
+}
+
+th {
+  background-color: var(--table-th);
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+td {
+  background-color: var(--table-td);
+  color: var(--text-secondary);
+}
+
+/* Remove bottom border from last row */
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* Add subtle shadow to the whole table */
+table {
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Tablet styles */

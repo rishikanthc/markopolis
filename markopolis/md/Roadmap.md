@@ -7,9 +7,9 @@ tags:
 
 In no particular order, here are some of the features that are planned:
 
-- [ ] Support for Obsidian callouts.
-- [ ] Editor-agnostic cross-device syncing.
-- [ ] Delete file API interface.
+- [x] Support for Obsidian callouts.
+- [x] Editor-agnostic cross-device syncing.
+- [x] Delete file API interface.
 - [ ] Graph view.
 - [ ] Daily notes.
 - [ ] Private pages to hide specific pages under a password.
