@@ -52,7 +52,7 @@ version: '3.8'
 
 services:
   markopolis:
-    image: ghcr.io/rishikanthc/markopolis:0.1.7
+    image: ghcr.io/rishikanthc/markopolis:0.2.0
     ports:
       - "8080:8080"
     environment:
