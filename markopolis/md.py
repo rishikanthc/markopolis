@@ -2,7 +2,6 @@ import os
 import base64
 import markdown
 from typing import Dict, Optional, Any, Tuple, List
-from markdown.extensions.wikilinks import WikiLinkExtension
 from .md_extensions import (
     CalloutExtension,
     MermaidExtension,
@@ -134,7 +133,8 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
             extensions=[
                 "fenced_code",
                 "codehilite",
-                WikiLinkExtension(base_url="/", end_url=""),
+                "mdx_wikilink_plus",
+                # WikiLinkExtension(base_url="/", end_url=""),
                 "markdown_checklist.extension",
                 "markdown.extensions.tables",
                 "footnotes",

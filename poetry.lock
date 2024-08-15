@@ -644,6 +644,20 @@ files = [
 ]
 
 [[package]]
+name = "mdx-wikilink-plus"
+version = "1.4.1"
+description = "A wikilink extension for Python Markdown"
+optional = false
+python-versions = "*"
+files = [
+    {file = "mdx_wikilink_plus-1.4.1-py3-none-any.whl", hash = "sha256:bf1a06cdf4e60484c64afb4d2069a07ca70263ebf56387a1da397d1ca182ab70"},
+    {file = "mdx_wikilink_plus-1.4.1.tar.gz", hash = "sha256:b82446c00a49a57a5ccab48e6053168397f6ed818d2183a8a0f7472aa0e8e3ca"},
+]
+
+[package.dependencies]
+Markdown = ">=2.6"
+
+[[package]]
 name = "nodeenv"
 version = "1.9.1"
 description = "Node.js virtual environment builder"
@@ -1558,4 +1572,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c70ab28c7671f8528878bd51de679e087cfb778e154c4f830dec0fe155ad8a23"
+content-hash = "397c4bb3096c8892684085873df38c8d1a9ba351ee858c788b5b912b5a85a306"
