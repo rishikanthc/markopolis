@@ -4,10 +4,10 @@ import markdown
 from typing import Dict, Optional, Any, Tuple, List
 from markdown.extensions.wikilinks import WikiLinkExtension
 from .md_extensions import (
+    MermaidExtension,
     ObsidianImageExtension,
     StrikethroughExtension,
     HighlightExtension,
-    FootnoteExtension,
 )
 from datetime import datetime
 import platform
@@ -140,7 +140,7 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
                 ObsidianImageExtension(),
                 StrikethroughExtension(),
                 HighlightExtension(),
-                FootnoteExtension(),
+                MermaidExtension(),
                 # "mdx_math",
             ]
         )
