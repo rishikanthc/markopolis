@@ -172,6 +172,93 @@ class MermaidExtension(Extension):
         md.preprocessors.register(MermaidPreprocessor(md), "mermaid", 35)
 
 
+# Regular expression to match Obsidian callout syntax
+CalloutRegex = re.compile(
+    r"^>\s*\[!(?P<type>[a-zA-Z]+)\](?P<collapsible>[\+\-])?\s*(?P<title>.*)$"
+)
+
+# Mapping of aliases to their primary callout types
+CALLOUT_ALIASES = {
+    "summary": "abstract",
+    "tldr": "abstract",
+    "check": "success",
+    "done": "success",
+    "help": "question",
+    "faq": "question",
+    "caution": "warning",
+    "attention": "warning",
+    "fail": "failure",
+    "missing": "failure",
+    "error": "danger",
+    "cite": "quote",
+}
+
+
+class CalloutPreprocessor(Preprocessor):
+    def run(self, lines):
+        new_lines = []
+        in_callout = False
+        callout_type = ""
+        is_collapsible = False
+        is_expanded = False
+
+        for line in lines:
+            # Match the start of a callout block
+            callout_match = CalloutRegex.match(line)
+            if callout_match:
+                callout_type = callout_match.group("type").lower()
+                # Check if the callout type is an alias and replace it with the primary type
+                callout_type = CALLOUT_ALIASES.get(callout_type, callout_type)
+
+                collapsible = callout_match.group("collapsible")
+                is_collapsible = collapsible is not None
+                is_expanded = collapsible == "+"
+
+                title = callout_match.group("title").strip()
+
+                classes = f"callout {callout_type}"
+                if is_collapsible:
+                    classes += " collapsible"
+                    if is_expanded:
+                        classes += " expanded"
+
+                new_lines.append(f'<div class="{classes}">')
+                new_lines.append('<div class="callout-title">')
+                if is_collapsible:
+                    new_lines.append('<div class="callout-fold"></div>')
+                if title:
+                    new_lines.append(
+                        f'<span class="callout-title-inner">{title}</span>'
+                    )
+                new_lines.append("</div>")
+                new_lines.append('<div class="callout-content">')
+                in_callout = True
+            elif in_callout:
+                if line.startswith("> "):
+                    # Strip the '> ' and add the line to the callout content
+                    content = line[2:].strip()
+                    if content:
+                        new_lines.append(content)
+                else:
+                    # End the callout block and append the current line outside the callout
+                    new_lines.append("</div></div>")
+                    new_lines.append(line)
+                    in_callout = False
+            else:
+                new_lines.append(line)
+
+        # Ensure any unclosed callout blocks are closed
+        if in_callout:
+            new_lines.append("</div></div>")
+
+        return new_lines
+
+
+class CalloutExtension(Extension):
+    def extendMarkdown(self, md):
+        md.preprocessors.register(CalloutPreprocessor(md), "callout", 35)
+
+
 # Usage
 if __name__ == "__main__":
     md_text = "Here is an image ![[image.png]]"

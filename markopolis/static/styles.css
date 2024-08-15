@@ -580,6 +580,269 @@ input[type="checkbox"] + label {
   display: none;
 }
 
+/* Base styles for all callouts */
+.callout {
+  /* border-left: 4px solid;
+  border-radius: 4px; */
+  margin: var(--spacing-06) 0;
+  padding: 0.8em 1em 0.8em 2em; /* Increased left padding for icon */
+  position: relative;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 16px;
+}
+
+.callout::before {
+  font-family: "Font Awesome 6 Free";
+  /* font-weight: 900; */
+  position: absolute;
+  top: 1em;
+  left: 0.7em;
+}
+
+.callout-title {
+  /* font-weight: bold; */
+  margin-bottom: var(--spacing-03);
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+}
+
+.callout-title::after {
+  margin-left: 0.5em;
+}
+
+.callout-title-inner {
+  flex-grow: 1;
+  color: #161616;
+}
+
+.callout-content {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  color: #161616;
+  line-height: 1.5;
+}
+
+/* Collapsible callout styles */
+.callout.collapsible .callout-title {
+  cursor: pointer;
+}
+
+.callout.collapsible .callout-fold {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.callout.collapsible .callout-fold::before {
+  content: "\f0d7"; /* caret-down icon */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  transition: transform 0.3s ease;
+}
+
+.callout.collapsible.expanded .callout-fold::before {
+  transform: rotate(-180deg);
+}
+
+.callout.collapsible .callout-content {
+  display: none;
+}
+
+.callout.collapsible.expanded .callout-content {
+  display: block;
+}
+/* Abstract */
+.callout.abstract {
+  background-color: #ecf8f8;
+  border-color: #68c2e8;
+}
+.callout.abstract::before {
+  content: "\f02d"; /* book icon */
+  color: #03bfbc;
+}
+.callout.abstract .callout-title::after {
+  content: "Abstract";
+  color: #03bfbc;
+  margin-left: 0.5em;
+}
+
+/* Info */
+.callout.info {
+  background-color: #e9f0fc;
+  border-color: #3498db;
+}
+.callout.info::before {
+  content: "\f05a"; /* info-circle icon */
+  color: #0a6ddd;
+}
+.callout.info .callout-title::after {
+  content: "Info";
+  color: #0a6ddd;
+  margin-left: 0.5em;
+}
+
+/* Todo */
+.callout.todo {
+  background-color: #e9f0fc;
+  border-color: #3498db;
+}
+.callout.todo::before {
+  content: "\f0ae"; /* tasks icon */
+  color: #0a6ddd;
+}
+.callout.todo .callout-title::after {
+  content: "Todo";
+  color: #0a6ddd;
+  margin-left: 0.5em;
+}
+
+/* Tip */
+.callout.tip {
+  background-color: #e8f8f5;
+  border-color: #2ecc71;
+}
+.callout.tip::before {
+  content: "\f0eb"; /* lightbulb icon */
+  color: #2ecc71;
+}
+.callout.tip .callout-title::after {
+  content: "Tip";
+  color: #2ecc71;
+  margin-left: 0.5em;
+}
+
+/* Success */
+.callout.success {
+  background-color: #ecf8ed;
+  border-color: #2ecc71;
+}
+.callout.success::before {
+  content: "\f00c"; /* check icon */
+  color: #0bb94e;
+}
+.callout.success .callout-title::after {
+  content: "Success";
+  color: #0bb94e;
+  margin-left: 0.5em;
+}
+
+/* Question */
+.callout.question {
+  background-color: #fef5e7;
+  border-color: #f39c12;
+}
+.callout.question::before {
+  content: "\f059"; /* question-circle icon */
+  color: #f39c12;
+}
+.callout.question .callout-title::after {
+  content: "Question";
+  color: #f39c12;
+  margin-left: 0.5em;
+}
+
+/* Warning */
+.callout.warning {
+  background-color: #fef5e7;
+  border-color: #f39c12;
+}
+.callout.warning::before {
+  content: "\f071"; /* exclamation-triangle icon */
+  color: #f39c12;
+}
+.callout.warning .callout-title::after {
+  content: "Warning";
+  color: #f39c12;
+  margin-left: 0.5em;
+}
+
+/* Failure */
+.callout.failure {
+  background-color: #fce5e5;
+  border-color: #e74c3c;
+}
+.callout.failure::before {
+  content: "\f00d"; /* times icon */
+  color: #e74c3c;
+}
+.callout.failure .callout-title::after {
+  content: "Failure";
+  color: #e74c3c;
+  margin-left: 0.5em;
+}
+
+/* Danger */
+.callout.danger {
+  background-color: #fce5e5;
+  border-color: #e74c3c;
+}
+.callout.danger::before {
+  content: "\f071"; /* exclamation-triangle icon */
+  color: #e74c3c;
+}
+.callout.danger .callout-title::after {
+  content: "Danger";
+  color: #e74c3c;
+  margin-left: 0.5em;
+}
+
+/* Bug */
+.callout.bug {
+  background-color: #fce5e5;
+  border-color: #e74c3c;
+}
+.callout.bug::before {
+  content: "\f188"; /* bug icon */
+  color: #e74c3c;
+}
+.callout.bug .callout-title::after {
+  content: "Bug";
+  color: #e74c3c;
+  margin-left: 0.5em;
+}
+
+/* Example */
+.callout.example {
+  background-color: #f4e8f8;
+  border-color: #9b59b6;
+}
+.callout.example::before {
+  content: "\f121"; /* code icon */
+  color: #9b59b6;
+}
+.callout.example .callout-title::after {
+  content: "Example";
+  color: #9b59b6;
+  margin-left: 0.5em;
+}
+
+/* Quote */
+.callout.quote {
+  background-color: #f4f6f7;
+  border-color: #95a5a6;
+}
+.callout.quote::before {
+  content: "\f10d"; /* quote-left icon */
+  color: #95a5a6;
+}
+.callout.quote .callout-title::after {
+  content: "Quote";
+  color: #95a5a6;
+  margin-left: 0.5em;
+}
+
+/* blockquote */
+.blockquote {
+}
+
+img {
+  max-width: 100%;
+}
+
 /* Mobile styles */
 @media (max-width: 768px) {
   .main {

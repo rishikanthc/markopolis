@@ -4,6 +4,7 @@ import markdown
 from typing import Dict, Optional, Any, Tuple, List
 from markdown.extensions.wikilinks import WikiLinkExtension
 from .md_extensions import (
+    CalloutExtension,
     MermaidExtension,
     ObsidianImageExtension,
     StrikethroughExtension,
@@ -141,6 +142,7 @@ def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optiona
                 StrikethroughExtension(),
                 HighlightExtension(),
                 MermaidExtension(),
+                CalloutExtension(),
                 # "mdx_math",
             ]
         )

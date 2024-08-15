@@ -52,7 +52,7 @@ version: '3.8'
 
 services:
   markopolis:
-    image: ghcr.io/rishikanthc/markopolis:0.2.0
+    image: ghcr.io/rishikanthc/markopolis:0.3.0
     ports:
       - "8080:8080"
     environment:
@@ -118,7 +118,8 @@ The home page content is loaded from a file called `home.md`.
 ## Roadmap
 In no particular order, here are some of the features that are planned:
 
-- [ ] Support for Obsidian callouts.
+- [x] Support for Obsidian callouts.
+- [x] Mermaid diagrams.
 - [ ] Editor-agnostic cross-device syncing.
 - [ ] Delete file API interface.
 - [ ] Graph view.
