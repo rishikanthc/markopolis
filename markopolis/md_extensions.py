@@ -1,5 +1,4 @@
 import markdown
-import string
 from markdown.inlinepatterns import InlineProcessor
 import xml.etree.ElementTree as etree
 from markdown.preprocessors import Preprocessor
@@ -116,60 +115,36 @@ class FootnoteExtension(Extension):
         md.postprocessors.register(footnote_postprocessor, "footnote_postprocessor", 25)
 
 
-def strip_not_printable(text):
-    """Remove non-printable characters from a string."""
-    return "".join(filter(lambda x: x in string.printable, text))
-
-
-# This regex matches the opening line for a mermaid code block in Obsidian's syntax.
-MermaidRegex = re.compile(r"^```[\ \t]*[Mm]ermaid[\ \t]*$")
-
-
 class MermaidPreprocessor(Preprocessor):
     def run(self, lines):
         new_lines = []
-        in_mermaid_code = False
-        is_mermaid = False
+        is_mermaid_block = False
+        mermaid_lines = []
 
         for line in lines:
-            if not in_mermaid_code:
-                # Match the opening line of the mermaid code block
-                if MermaidRegex.match(line):
-                    in_mermaid_code = True
-                    new_lines.append('<div class="mermaid">')
-                    is_mermaid = True
-                else:
-                    new_lines.append(line)
+            if line.strip() == "```mermaid":
+                is_mermaid_block = True
+                mermaid_lines = []
+            elif line.strip() == "```" and is_mermaid_block:
+                is_mermaid_block = False
+                mermaid_content = "\n".join(mermaid_lines)
+                mermaid_html = self.mermaid_to_html(mermaid_content)
+                new_lines.append(mermaid_html)
+            elif is_mermaid_block:
+                mermaid_lines.append(line)
             else:
-                # Match the closing line of the mermaid code block
-                if line.strip() == "```":
-                    in_mermaid_code = False
-                    new_lines.append("</div>")
-                    new_lines.append("")
-                else:
-                    # Strip non-printable characters and add the mermaid code lines
-                    new_lines.append(strip_not_printable(line).strip())
-
-        if is_mermaid:
-            # Add the mermaid.js initialization script to the bottom of the document if any mermaid diagrams were found.
-            new_lines.append("")
-            new_lines.append("""<script>
-                function initializeMermaid() {
-                    mermaid.initialize({startOnLoad: true});
-                }
-                if (document.readyState === "complete" || document.readyState === "interactive") {
-                    setTimeout(initializeMermaid, 1);
-                } else {
-                    document.addEventListener("DOMContentLoaded", initializeMermaid);
-                }
-            </script>""")
+                new_lines.append(line)
 
         return new_lines
+
+    def mermaid_to_html(self, mermaid_content):
+        escaped_content = mermaid_content.replace('"', "&quot;")
+        return f'<div class="mermaid">{escaped_content}</div>'
 
 
 class MermaidExtension(Extension):
     def extendMarkdown(self, md):
-        md.preprocessors.register(MermaidPreprocessor(md), "mermaid", 35)
+        md.preprocessors.register(MermaidPreprocessor(md), "mermaid", 175)
 
 
 # Regular expression to match Obsidian callout syntax
