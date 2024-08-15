@@ -91,8 +91,9 @@ The config file should specify the domain of the deployment including the protoc
 the api key. The api key should be the same as what you used for the deployment:
 
 ```yaml
-domain: "https://your-domain.com"
-api_key: <really long random alpha-numeric string>
+default:
+  domain: "https://your-domain.com"
+  api_key: <really long random alpha-numeric string>
 ```
 
 I recommend using a python virtual environment for the local installation.
