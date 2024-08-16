@@ -1,550 +1,92 @@
-import os
-import sh
 import base64
-import markdown
-import markopolis.data_dantic as D
-from typing import Dict, Optional, Any, Tuple, List
-from .md_extensions import (
-    CalloutExtension,
-    MermaidExtension,
-    ObsidianImageExtension,
-    StrikethroughExtension,
-    HighlightExtension,
-)
-from datetime import datetime
-import platform
-import regex as mre
-import yaml
-import re
-from .config import settings
 from loguru import logger
+import sys
+from markopolis.config import settings
+import yaml
+import os
 
-MDROOT = settings.md_path
+logger.remove()
+logger.add(sys.stdout, level="DEBUG")
 
 
-# Parse title from markdown file metadata
-def get_markdown_title(filepath: str) -> str:
+def write_md_files(md_file_dict):
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            first_line = f.readline().strip()
-            if first_line.startswith("---"):
-                metadata = ""
-                for line in f:
-                    if line.strip() == "---":
-                        break
-                    metadata += line
+        # Extract file path and content from the dictionary
+        file_path = md_file_dict["file_path"]
+        file_content = md_file_dict["file_content"]
 
-                metadata_dict = yaml.safe_load(metadata)
-                if isinstance(metadata_dict, dict) and "title" in metadata_dict:
-                    return metadata_dict["title"]
-    except Exception as e:
-        logger.error(f"Error reading file {filepath}: {e}")
+        # Get the root directory from settings
+        md_root = settings.md_path
 
-    # Fallback to filename if title metadata is not present
-    return os.path.splitext(os.path.basename(filepath))[0]
+        # Split the file_path into directory and filename
+        directory, filename = os.path.split(file_path)
 
+        # Remove the .md extension to use for title if needed
+        filename_without_ext = filename[:-3]
 
-# Recursively list folders and files
-def list_markdown_files(
-    directory: str = "/", root: str = MDROOT
-) -> Tuple[Optional[D.FolderItem], Optional[str]]:
-    if not os.path.exists(root):
-        return None, f"The directory {root} does not exist."
-
-    folder_item = D.FolderItem(folder=directory, members=[])
-    folders = []
-    files = []
-
-    # Separate folders and markdown files
-    for item in sorted(os.listdir(root)):
-        item_path = os.path.join(root, item)
-        rel_path = os.path.relpath(item_path, MDROOT)
-
-        if os.path.isdir(item_path):
-            # Recurse into subfolder
-            subfolder_item, error = list_markdown_files(directory=item, root=item_path)
-            if error:
-                logger.error(f"Error in subfolder: {error}")
-                continue
-            if (
-                subfolder_item and subfolder_item.members
-            ):  # Only include non-empty folders
-                folders.append(subfolder_item)
-        elif item.endswith(".md"):
-            # It's a markdown file
-            title = get_markdown_title(item_path)
-            link = os.path.splitext(rel_path)[0]  # Remove the .md extension
-            file_item = D.FileItem(title=title, link=link)
-            files.append(file_item)
-
-    # Sort folders and files lexicographically
-    folders = sorted(folders, key=lambda x: x.folder)
-    files = sorted(files, key=lambda x: x.title)
-
-    # Combine sorted folders and files, with folders appearing first
-    folder_item.members = folders + files
-
-    if not folder_item.members:
-        return None, None  # Return None for empty folders
-
-    return folder_item, None
-
-
-def clean_filename(filename):
-    """Clean the filename to be used as a title."""
-    # Remove the .md extension
-    name = os.path.splitext(filename)[0]
-    # Replace hyphens with spaces and capitalize words
-    return " ".join(word.capitalize() for word in name.replace("-", " ").split())
-
-
-def get_meta(note_path: str) -> Tuple[Optional[Dict[str, Any]], str]:
-    if not note_path or not isinstance(note_path, str):
-        return None, "Invalid note path"
-
-    full_note_path = os.path.join(MDROOT, note_path + ".md")
-    if not os.path.exists(full_note_path):
-        return None, f"The file {full_note_path} does not exist."
-
-    try:
-        with open(full_note_path, "r") as file:
-            content = file.read()
-            if content.strip().startswith("---"):
-                # Split the content at the second occurrence of "---"
-                _, front_matter, _ = content.split("---", 2)
-                metadata = yaml.safe_load(front_matter)
-                if metadata is None:
-                    metadata = {}
-                if not isinstance(metadata, dict):
-                    return None, "Invalid YAML structure: expected a dictionary"
-            else:
-                metadata = {}  # No front matter, use empty dict
-
-        # Add default values for missing fields
-        if "title" not in metadata or not metadata["title"]:
-            metadata["title"] = clean_filename(os.path.basename(full_note_path))
-        if "tags" not in metadata:
-            metadata["tags"] = []
-        elif not isinstance(metadata["tags"], list):
-            metadata["tags"] = [metadata["tags"]]  # Convert to list if it's not already
-        if "date" not in metadata:
-            # Get file creation date
-            if platform.system() == "Windows":
-                creation_time = os.path.getctime(full_note_path)
-            else:  # Unix-based systems
-                stat = os.stat(full_note_path)
-                try:
-                    creation_time = stat.st_birthtime  # macOS
-                except AttributeError:
-                    creation_time = stat.st_mtime  # Linux and other Unix
-            metadata["date"] = datetime.fromtimestamp(creation_time)
-
-        # Add the relative path to the metadata
-        metadata["path"] = note_path
-
-        # Move any unrecognized fields to custom_fields
-        recognized_fields = {"title", "date", "tags", "path"}
-        custom_fields = {
-            k: v for k, v in metadata.items() if k not in recognized_fields
-        }
-
-        # Convert boolean values in custom_fields to strings
-        for key, value in custom_fields.items():
-            if isinstance(value, bool):
-                custom_fields[key] = str(value).lower()
-
-        # Remove custom fields from the main metadata dict and add them to custom_fields
-        for key in custom_fields:
-            metadata.pop(key, None)
-
-        metadata["custom_fields"] = custom_fields
-
-        return metadata, ""
-    except yaml.YAMLError as e:
-        return None, f"Error parsing YAML front matter: {e}"
-    except Exception as e:
-        return None, f"Error reading file: {e}"
-
-
-def get_note_content(note_path: str) -> Tuple[Optional[Tuple[str, str]], Optional[str]]:
-    md_configs = {
-        "mdx_wikilink_plus": {
-            "base_url": f"{settings.domain}",
-            # "end_url": ".html",
-            # "url_case": "lowercase",
-            # "html_class": "a-custom-class",
-            #'build_url': build_url, # A callable
-            # all of the above config params are optional
-        },
-    }
-    if not note_path or not isinstance(note_path, str):
-        return None, "Invalid note path"
-    full_note_path = os.path.join(MDROOT, note_path + ".md")
-    if not os.path.exists(full_note_path):
-        return None, f"The file {full_note_path} does not exist."
-    try:
-        with open(full_note_path, "r") as file:
-            content = file.read()
-        # Split front matter and content
-        parts = content.split("---", 2)
-        if len(parts) >= 3:
-            markdown_content = parts[2].strip()
-        else:
-            markdown_content = content
-        # Configure Markdown parser with extensions
-        md = markdown.Markdown(
-            extensions=[
-                "fenced_code",
-                "codehilite",
-                "mdx_wikilink_plus",
-                # WikiLinkExtension(base_url="/", end_url=""),
-                "markdown_checklist.extension",
-                "markdown.extensions.tables",
-                "footnotes",
-                ObsidianImageExtension(),
-                StrikethroughExtension(),
-                HighlightExtension(),
-                MermaidExtension(),
-                CalloutExtension(),
-                # "mdx_math",
-            ],
-            extension_configs=md_configs,
-        )
-        # Convert Markdown to HTML
-        html_content = md.convert(markdown_content)
-        return (markdown_content, html_content), ""
-    except Exception as e:
-        return None, f"Error reading or processing file: {e}"
-
-
-def get_toc(note_path: str) -> Tuple[Optional[Dict[str, Dict]], Optional[str]]:
-    if not note_path or not isinstance(note_path, str):
-        return None, "Invalid note path"
-    full_note_path = os.path.join(MDROOT, note_path + ".md")
-    if not os.path.exists(full_note_path):
-        return None, f"The file {full_note_path} does not exist."
-    try:
-        with open(full_note_path, "r") as file:
-            content = file.read()
-        # Remove front matter
-        content_parts = content.split("---", 2)
-        if len(content_parts) >= 3:
-            content = content_parts[2]
-        # Extract headings
-        heading_pattern = re.compile(r"^(#{1,6})\s+(.*?)$", re.MULTILINE)
-        headings = [
-            (len(match.group(1)), match.group(2).strip())
-            for match in heading_pattern.finditer(content)
-        ]
-        # Build TOC
-        toc: Dict[str, Dict] = {}
-        current_levels: Dict[int, Dict] = {0: toc}
-        for level, title in headings:
-            new_dict: Dict[str, Dict] = {}
-            parent_level = max(k for k in current_levels.keys() if k < level)
-            current_levels[parent_level][title] = new_dict
-            current_levels[level] = new_dict
-            # Clear any deeper levels
-            for lvl in list(current_levels.keys()):
-                if lvl > level:
-                    del current_levels[lvl]
-        return toc, ""
-    except Exception as e:
-        return None, f"Error processing file: {e}"
-
-
-def get_backlinks_slow(note_path: str) -> Tuple[Optional[List[str]], Optional[str]]:
-    if not note_path or not isinstance(note_path, str):
-        return None, "Invalid note path"
-    try:
-        backlinks = []
-        note_name = os.path.basename(note_path)
-        note_name_without_ext = os.path.splitext(note_name)[0]
-
-        # Create different patterns to match various link formats
-        patterns = [
-            rf"\[\[\s*{re.escape(note_path)}\s*(\|[^\]]+)?\s*\]\]",  # Full path
-            rf"\[\[\s*{re.escape(note_name_without_ext)}\s*(\|[^\]]+)?\s*\]\]",  # Just the filename without extension
-            rf"\[.*\]\(.*{re.escape(note_path)}.*\)",  # Markdown link with full path
-            rf"\[.*\]\(.*{re.escape(note_name)}.*\)",  # Markdown link with filename
-        ]
-
-        for root, _, files in os.walk(MDROOT):
-            for filename in files:
-                if filename.endswith(".md"):
-                    file_path = os.path.join(root, filename)
-                    relative_path = os.path.relpath(file_path, MDROOT)
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        content = file.read()
-                        for pattern in patterns:
-                            if re.search(pattern, content, re.IGNORECASE):
-                                backlinks.append(relative_path)
-                                logger.info(
-                                    f"Backlink found in {relative_path} for {note_path}"
-                                )
-                                break  # No need to check other patterns for this file
-
-        logger.info(f"Found {len(backlinks)} backlinks for {note_path}")
-        return backlinks, ""
-    except Exception as e:
-        logger.error(f"Error processing backlinks for {note_path}: {e}")
-        return None, f"Error processing backlinks: {e}"
-
-
-def fuzzy_search_in_text(search_term, max_dist=2):
-    """
-    Perform a fuzzy search on the contents of files and return matches ordered by closeness.
-    """
-    logger.info(
-        f"Starting fuzzy search for term: {search_term} with max_dist: {max_dist}"
-    )
-    logger.info(f"MDROOT: {MDROOT}")
-
-    matches_with_distances = []
-    pattern = f"({search_term}){{e<={max_dist}}}"
-
-    try:
-        for root, _, files in os.walk(MDROOT):
-            for file_name in files:
-                if not file_name.endswith(".md"):
-                    continue
-                file_path = os.path.join(root, file_name)
-                relative_path = os.path.relpath(file_path, MDROOT)
-
-                try:
-                    with open(file_path, "r", encoding="utf-8") as file:
-                        content = file.read()
-                        match = mre.search(pattern, content, mre.BESTMATCH)
-                        if match:
-                            distance = match.fuzzy_counts[0]
-                            snippet_start = max(match.start() - 30, 0)
-                            snippet_end = min(match.end() + 30, len(content))
-                            snippet = content[snippet_start:snippet_end]
-                            matches_with_distances.append(
-                                (
-                                    relative_path,
-                                    snippet,
-                                    distance,
-                                )
-                            )
-                except Exception as e:
-                    logger.error(f"Error reading file {file_path}: {str(e)}")
-
-        sorted_matches = sorted(matches_with_distances, key=lambda x: x[2])
-        logger.info(f"Total matches found: {len(sorted_matches)}")
-        return [(match[0], match[1]) for match in sorted_matches]
-    except Exception as e:
-        logger.exception(f"Unexpected error in fuzzy search: {str(e)}")
-        return []
-
-
-def raw(note_path: str) -> Tuple[Optional[str], Optional[str]]:
-    # Remove any file extension if present
-    note_path = os.path.splitext(note_path)[0]
-    file_path = os.path.join(MDROOT, f"{note_path}.md")
-
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            content = file.read()
-        return content, None
-    except FileNotFoundError:
-        error_msg = f"Error: File '{file_path}' not found."
-        logger.error(error_msg)
-        return None, error_msg
-    except IOError as e:
-        error_msg = f"Error: Unable to read the file '{file_path}'. {str(e)}"
-        logger.error(error_msg)
-        return None, error_msg
-    except Exception as e:
-        error_msg = f"Unexpected error reading '{file_path}': {str(e)}"
-        logger.error(error_msg)
-        return None, error_msg
-
-
-def create_markdown_files(markdown_dict):
-    try:
-        files_created = 0
-        for path, content in markdown_dict.items():
-            # Normalize the path to handle different separators
-            normalized_path = os.path.normpath(path)
-
-            # Construct the full file path
-            file_path = os.path.join(MDROOT, normalized_path)
-
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-            # Add .md extension if not present
-            if not file_path.endswith(".md"):
-                file_path += ".md"
-
-            # Write the content to the file
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write(content)
-
-            files_created += 1
-            logger.info(f"Created file: {file_path}")
-
-        logger.info(
-            f"Created {files_created} markdown files in the '{MDROOT}' directory."
-        )
-        return 200  # Success
-    except Exception as e:
-        logger.error(f"An error occurred while creating markdown files: {str(e)}")
-        return 500  # Internal Server Error
-
-
-def create_images_from_dict(image_input: dict):
-    try:
-        files_created = 0
-        # Create an 'images' folder inside MDROOT if it doesn't exist
-        images_folder = os.path.join(MDROOT, "images")
-        os.makedirs(images_folder, exist_ok=True)
-
-        # Process each image in the input dictionary
-        for path, img_data in image_input.items():
-            # Get the image file name from the path
-            file_name = os.path.basename(path)
-
-            # Construct the full file path in the images folder
-            file_path = os.path.join(images_folder, file_name)
-
-            # Decode the base64 image data
-            img_bytes = base64.b64decode(img_data)
-
-            # Write the image to the file
-            with open(file_path, "wb") as f:
-                f.write(img_bytes)
-
-            files_created += 1
-            logger.info(f"Created image file: {file_path}")
-
-        logger.info(
-            f"Created {files_created} image files in the '{images_folder}' directory."
-        )
-        return 200  # Success
-    except Exception as e:
-        logger.error(f"An error occurred while creating image files: {str(e)}")
-        return 500  # Internal Server Error
-
-
-def clean_file_title(title: str) -> str:
-    # Replace invalid characters with hyphens, remove leading/trailing spaces, and normalize spaces
-    filename = re.sub(r"[^\w\s-]", "", title).strip().lower()
-    filename = re.sub(r"[-\s]+", "-", filename)
-    return filename
-
-
-def write_md_files(md_dict):
-    try:
-        # Convert dict back to a FileWriteItem instance
-        file_item = D.FileWriteItem(**md_dict)
-
-        # Clean the title to create a valid filename
-        filename = clean_file_title(file_item.title)
-        file_path = os.path.join(MDROOT, file_item.path, f"{filename}.md")
-
-        # Ensure directory exists
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
-        # Check for valid YAML frontmatter
-        content = file_item.content
-        if not content.strip().startswith("---"):
-            # No frontmatter, skip writing the file
-            return 500
-
-        # Extract the frontmatter from the content
-        frontmatter_match = re.search(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
-        if not frontmatter_match:
-            # Frontmatter is not properly formatted, skip writing the file
-            return 500
-
-        # Parse frontmatter into a dictionary
-        frontmatter = yaml.safe_load(frontmatter_match.group(1))
-
-        # Add title to frontmatter if not set
-        if "title" not in frontmatter:
-            frontmatter["title"] = filename.replace("-", " ")
-
-        # Reconstruct the content with updated frontmatter
-        updated_frontmatter = yaml.dump(frontmatter, default_flow_style=False).strip()
-        new_content = (
-            f"---\n{updated_frontmatter}\n---\n" + content[frontmatter_match.end() :]
-        )
-
-        # Write the content to the file
-        with open(file_path, "w") as f:
-            f.write(new_content)
-
-        return 200
-
-    except Exception:
-        # If anything goes wrong, return 500
-        return 500
-
-
-def write_img_files(img_dict):
-    img_item = None  # Initialize img_item to avoid unbound issues
-    try:
-        # Convert the dict back to ImageWriteItem
-        img_item = D.ImageWriteItem(**img_dict)
-
-        # Create the full path to the file including MDROOT
-        file_path = os.path.join(MDROOT, img_item.path, img_item.filename)
-
-        # Log the file path for debugging
-        logger.debug(f"Attempting to write image to: {file_path}")
+        # Construct the full path to the directory by combining md_root and the directory
+        full_directory_path = os.path.join(md_root, directory)
 
         # Ensure the directory exists
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        os.makedirs(full_directory_path, exist_ok=True)
 
-        # Decode the base64 image string
-        try:
-            img_data = base64.b64decode(img_item.img)
-        except Exception as e:
-            logger.error(f"Error decoding base64 for image {img_item.filename}: {e}")
-            return 500
+        # Parse the YAML frontmatter and check for title
+        content_lines = file_content.splitlines()
 
-        # Write the image file to the specified path
-        with open(file_path, "wb") as f:
-            f.write(img_data)
+        # Find where the frontmatter ends
+        if content_lines[0] == "---":
+            end_of_yaml = content_lines[1:].index("---") + 1
+            yaml_frontmatter = "\n".join(content_lines[1:end_of_yaml])
+            parsed_yaml = yaml.safe_load(yaml_frontmatter)
 
-        logger.info(f"Image successfully written to: {file_path}")
-        return 200
+            # Check if 'title' exists in the parsed YAML, if not set it to the filename without extension
+            if "title" not in parsed_yaml:
+                parsed_yaml["title"] = filename_without_ext
 
+            # Rebuild the content with updated YAML frontmatter
+            updated_yaml = yaml.dump(parsed_yaml, default_flow_style=False)
+            file_content = f"---\n{updated_yaml}---\n" + "\n".join(
+                content_lines[end_of_yaml + 1 :]
+            )
+
+        # Construct the full path for the file
+        full_file_path = os.path.join(full_directory_path, filename)
+
+        # Write the content to the markdown file
+        with open(full_file_path, "w") as md_file:
+            md_file.write(file_content)
+
+        return 0  # Success
     except Exception as e:
-        # Log the exception with details, handling img_item being None
-        if img_item:
-            logger.error(f"Failed to write image {img_item.filename}: {e}")
-        else:
-            logger.error(f"Failed to create ImageWriteItem: {e}")
-        return 500
+        # Log the error if necessary
+        print(f"Error writing markdown file: {e}")
+        return -1  # Error
 
 
-def delete_by_title(note_title):
-    pth = settings.md_path
-    note_title = note_title.replace("-", " ")
-    search_pattern = f"title: {note_title}"
-
+def write_images(img_file_dict):
     try:
-        rg = sh.Command("rg")
-        result = rg("-l", "-i", search_pattern, pth, _err_to_out=True)
+        # Extract file path and content from the dictionary
+        file_path = img_file_dict["file_path"]
+        file_content = img_file_dict["file_content"]
 
-        if result is not None:
-            matches = result.splitlines()
-            path_pattern = r"(\/[^\s\x1b]+|[a-zA-Z]:\\[^\s\x1b]+)"
+        # Get the root directory from settings
+        md_root = settings.md_path
 
-            # Find all matching paths using the regex
-            paths = [re.findall(path_pattern, fp) for fp in matches]
-            logger.debug(f"delete path: {paths}")
+        # Construct the full path by combining md_root and the relative file path
+        full_path = os.path.join(md_root, file_path)
 
-            if len(paths) > 1:
-                return 120
-            else:
-                os.remove(paths[0][0])
-                return 0
-        else:
-            return 1
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
 
-    except sh.ErrorReturnCode as e:
-        return e.exit_code
+        # Decode the base64 image content
+        image_data = base64.b64decode(file_content)
+
+        # Write the decoded image content to the file
+        with open(full_path, "wb") as image_file:
+            image_file.write(image_data)
+
+        return 0  # Success
+    except Exception as e:
+        # Log the error if necessary
+        print(f"Error writing image file: {e}")
+        return -1  # Error

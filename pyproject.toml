@@ -58,6 +58,6 @@ diagnosticMode = "openFilesOnly"
 
 [tool.poetry.scripts]
 consume = "markopolis.scripts.consume:consume"
-markopolis = "markopolis.fastapp:main"
+markopolis = "markopolis.app:main"
 mtest = "markopolis.scripts.testsh:main"
 md_sync = "markopolis.scripts.md_sync:md_sync"

@@ -2,8 +2,9 @@
 publish: true
 tags:
 - development
-title: contributing
+title: Contributing
 ---
+
 Contributions are most welcome. I am looking to add several features
 to this project and would appreciate any and all help I can get.
 Check out the [[Roadmap]] for a list of features I currently plan to implement.
