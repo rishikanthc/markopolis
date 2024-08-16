@@ -25,6 +25,7 @@ from .md import (
     raw,
     create_markdown_files,
     create_images_from_dict,
+    write_md_files,
 )
 
 
@@ -109,6 +110,11 @@ def get_raw(note_path: str) -> "Raw":
 def write_files(md_dict):
     result = create_markdown_files(md_dict)
 
+    return Status(status=result)
+
+
+def write_md(md_dict):
+    result = write_md_files(md_dict)
     return Status(status=result)
 
 

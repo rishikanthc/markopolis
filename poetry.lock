@@ -1158,6 +1158,17 @@ files = [
 ]
 
 [[package]]
+name = "sh"
+version = "2.0.7"
+description = "Python subprocess replacement"
+optional = false
+python-versions = "<4.0,>=3.8.1"
+files = [
+    {file = "sh-2.0.7-py3-none-any.whl", hash = "sha256:2f2f79a65abd00696cf2e9ad26508cf8abb6dba5745f40255f1c0ded2876926d"},
+    {file = "sh-2.0.7.tar.gz", hash = "sha256:029d45198902bfb967391eccfd13a88d92f7cebd200411e93f99ebacc6afbb35"},
+]
+
+[[package]]
 name = "shellingham"
 version = "1.5.4"
 description = "Tool to Detect Surrounding Shell"
@@ -1572,4 +1583,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "397c4bb3096c8892684085873df38c8d1a9ba351ee858c788b5b912b5a85a306"
+content-hash = "81fdd3273792beab9b7134c968aec9cb6686304f343addff1a9534753b59cfeb"

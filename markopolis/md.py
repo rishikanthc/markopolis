@@ -425,3 +425,58 @@ def create_images_from_dict(image_input: dict):
     except Exception as e:
         logger.error(f"An error occurred while creating image files: {str(e)}")
         return 500  # Internal Server Error
+
+
+def clean_file_title(title: str) -> str:
+    # Replace invalid characters with hyphens, remove leading/trailing spaces, and normalize spaces
+    filename = re.sub(r"[^\w\s-]", "", title).strip().lower()
+    filename = re.sub(r"[-\s]+", "-", filename)
+    return filename
+
+
+def write_md_files(md_dict):
+    try:
+        # Convert dict back to a FileWriteItem instance
+        file_item = D.FileWriteItem(**md_dict)
+
+        # Clean the title to create a valid filename
+        filename = clean_file_title(file_item.title)
+        file_path = os.path.join(MDROOT, file_item.path, f"{filename}.md")
+
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # Check for valid YAML frontmatter
+        content = file_item.content
+        if not content.strip().startswith("---"):
+            # No frontmatter, skip writing the file
+            return 500
+
+        # Extract the frontmatter from the content
+        frontmatter_match = re.search(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
+        if not frontmatter_match:
+            # Frontmatter is not properly formatted, skip writing the file
+            return 500
+
+        # Parse frontmatter into a dictionary
+        frontmatter = yaml.safe_load(frontmatter_match.group(1))
+
+        # Add title to frontmatter if not set
+        if "title" not in frontmatter:
+            frontmatter["title"] = filename.replace("-", " ")
+
+        # Reconstruct the content with updated frontmatter
+        updated_frontmatter = yaml.dump(frontmatter, default_flow_style=False).strip()
+        new_content = (
+            f"---\n{updated_frontmatter}\n---\n" + content[frontmatter_match.end() :]
+        )
+
+        # Write the content to the file
+        with open(file_path, "w") as f:
+            f.write(new_content)
+
+        return 200
+
+    except Exception:
+        # If anything goes wrong, return 500
+        return 500

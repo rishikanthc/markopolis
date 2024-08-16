@@ -1,10 +1,10 @@
 ---
 publish: true
 tags:
-  - syntax
-  - markdown
+- syntax
+- markdown
+title: markdown syntax
 ---
-
 # Headings
 
 ```markdown

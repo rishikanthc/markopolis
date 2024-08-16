@@ -1,10 +1,10 @@
 ---
 publish: true
 tags:
-  - todo
-  - features
+- todo
+- features
+title: roadmap
 ---
-
 In no particular order, here are some of the features that are planned:
 
 - [ ] Support for Obsidian callouts.

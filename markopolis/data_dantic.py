@@ -93,6 +93,12 @@ class Raw(BaseModel):
     contents: str
 
 
+class FileWriteItem(BaseModel):
+    title: str
+    path: str
+    content: str
+
+
 class WriteNotesInput(BaseModel):
     notes: dict[str, str]
 

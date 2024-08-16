@@ -1,12 +1,11 @@
 ---
-title: Welcome to Markopolis
 publish: true
 tags:
-  - markdown
-  - webapp
-  - API
+- markdown
+- webapp
+- API
+title: Welcome to Markopolis
 ---
-
 ## Introduction
 Hi,
 My name is [Rishikanth](https://rishikanth.me). I built Markopolis, a web app and API server

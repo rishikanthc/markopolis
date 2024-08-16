@@ -157,18 +157,14 @@ async def get_note_raw(
     return result
 
 
-@app.put("/notes/write")
-async def write_notes(notes: D.WriteNotesInput, api_key: str = Depends(verify_api_key)):
-    logger.info("WriteNotesResource PUT request received")
-    try:
-        result = F.write_files(notes.notes)
-        if result.status == 200:
-            return {"message": "Files created successfully"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to create files")
-    except Exception as e:
-        logger.exception(f"Unexpected error in write_notes: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+@app.put("/notes/write", response_model=D.Status)
+async def write_notes(notes: D.FileWriteItem, api_key: str = Depends(verify_api_key)):
+    # Convert the FileWriteItem to a dictionary and pass it to write_md
+    notes_dict = notes.model_dump()
+    result = F.write_md(notes_dict)
+    if result.status == 500:
+        raise HTTPException(status_code=500, detail="Failed to write markdown file")
+    return result
 
 
 @app.put("/notes/images/upload")

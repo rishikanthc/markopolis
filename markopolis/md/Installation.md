@@ -1,11 +1,11 @@
 ---
 publish: true
 tags:
-  - instructions
-  - install
-  - docker
+- instructions
+- install
+- docker
+title: installation
 ---
-
 Installation has two parts. Server deployment and local setup. The server deployment
 is for deploying and setting up the API server and front-end. The local setup is
 for pushing markdown files to the server for publishing.
