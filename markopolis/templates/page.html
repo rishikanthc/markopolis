@@ -57,14 +57,35 @@
             </span>
           </div>
         </div>
+
+        {% macro render_members(members) %}
+        <div class="tree">
+          {% for member in members %}
+          {% if member.folder is defined %}
+          <div class="folder">
+            <div class="folder-header">
+              <i class="fas fa-folder"></i> <!-- Folder icon -->
+              <!-- <span class="folder-toggle">▶</span> -->
+              <span class="folder-name">{{ member.folder }}</span>
+            </div>
+            <div class="folder-contents">
+              {{ render_members(member.members) }}
+            </div>
+          </div>
+          {% elif member.title is defined and member.link is defined %}
+          <div class="file">
+            <a href="{{ base_url }}/{{ member.link }}">{{ member.title }}</a>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endmacro %}
         <div class="nav-wrapper">
           <div class="nav">
-            {% if posts %}
-            {% for post in posts %}
-            <div class="nav_item">
-              <a href="{{base_url}}/{{ post }}">{{ post }}</a>
-            </div>
-            {% endfor %}
+            {% if posts.files %}
+            {{ render_members(posts.files[0].members) }}
+            {% else %}
+            <p>No files available</p>
             {% endif %}
           </div>
         </div>
@@ -352,6 +373,25 @@
           searchInput.focus();
         }
       }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.folder-header').forEach(function (header) {
+        header.addEventListener('click', function () {
+          const folder = header.parentElement;
+          const contents = folder.querySelector('.folder-contents');
+          const icon = header.querySelector('.fas.fa-folder'); // Select the folder icon
+
+          folder.classList.toggle('expanded');
+          icon.classList.toggle('fa-folder-open'); // Switch to open folder icon
+
+          if (folder.classList.contains('expanded')) {
+            contents.style.display = 'block';
+          } else {
+            contents.style.display = 'none';
+          }
+        });
+      });
     });
 
     hljs.highlightAll();

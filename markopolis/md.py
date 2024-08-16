@@ -1,6 +1,7 @@
 import os
 import base64
 import markdown
+import markopolis.data_dantic as D
 from typing import Dict, Optional, Any, Tuple, List
 from .md_extensions import (
     CalloutExtension,
@@ -20,21 +21,72 @@ from loguru import logger
 MDROOT = settings.md_path
 
 
-def list_markdown_files():
-    if not os.path.exists(MDROOT):
-        return None, f"The directory {MDROOT} does not exist."
+# Parse title from markdown file metadata
+def get_markdown_title(filepath: str) -> str:
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            first_line = f.readline().strip()
+            if first_line.startswith("---"):
+                metadata = ""
+                for line in f:
+                    if line.strip() == "---":
+                        break
+                    metadata += line
 
+                metadata_dict = yaml.safe_load(metadata)
+                if isinstance(metadata_dict, dict) and "title" in metadata_dict:
+                    return metadata_dict["title"]
+    except Exception as e:
+        logger.error(f"Error reading file {filepath}: {e}")
+
+    # Fallback to filename if title metadata is not present
+    return os.path.splitext(os.path.basename(filepath))[0]
+
+
+# Recursively list folders and files
+def list_markdown_files(
+    directory: str = "/", root: str = MDROOT
+) -> Tuple[Optional[D.FolderItem], Optional[str]]:
+    if not os.path.exists(root):
+        return None, f"The directory {root} does not exist."
+
+    folder_item = D.FolderItem(folder=directory, members=[])
+    folders = []
     files = []
-    for root, _, filenames in os.walk(MDROOT):
-        for filename in filenames:
-            if filename.endswith(".md"):
-                # Get the relative path from MDROOT
-                rel_path = os.path.relpath(os.path.join(root, filename), MDROOT)
-                # Remove the .md extension
-                rel_path_without_ext = os.path.splitext(rel_path)[0]
-                files.append(rel_path_without_ext)
 
-    return files, ""
+    # Separate folders and markdown files
+    for item in sorted(os.listdir(root)):
+        item_path = os.path.join(root, item)
+        rel_path = os.path.relpath(item_path, MDROOT)
+
+        if os.path.isdir(item_path):
+            # Recurse into subfolder
+            subfolder_item, error = list_markdown_files(directory=item, root=item_path)
+            if error:
+                logger.error(f"Error in subfolder: {error}")
+                continue
+            if (
+                subfolder_item and subfolder_item.members
+            ):  # Only include non-empty folders
+                folders.append(subfolder_item)
+        elif item.endswith(".md"):
+            # It's a markdown file
+            title = get_markdown_title(item_path)
+            link = os.path.splitext(rel_path)[0]  # Remove the .md extension
+            file_item = D.FileItem(title=title, link=link)
+            files.append(file_item)
+
+    # Sort folders and files lexicographically
+    folders = sorted(folders, key=lambda x: x.folder)
+    files = sorted(files, key=lambda x: x.title)
+
+    # Combine sorted folders and files, with folders appearing first
+    folder_item.members = folders + files
+
+    if not folder_item.members:
+        return None, None  # Return None for empty folders
+
+    return folder_item, None
 
 
 def clean_filename(filename):

@@ -31,11 +31,11 @@ from .md import (
 __all__ = ["list_md", "get_metadata", "get_note", "get_headings"]
 
 
-def list_md():
+def list_md() -> MarkdownFileList | Error:
     files, error = list_markdown_files()
 
-    if files is not None:
-        return MarkdownFileList(files=files)
+    if files:
+        return MarkdownFileList(files=[files])  # Ensure this is a list of FolderItems
 
     return Error(error=error)
 

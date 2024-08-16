@@ -75,8 +75,18 @@ class BacklinkList(BaseModel):
     backlinks: List[Backlink]
 
 
+class FileItem(BaseModel):
+    title: str
+    link: str
+
+
+class FolderItem(BaseModel):
+    folder: str
+    members: "list[FileItem | FolderItem]"
+
+
 class MarkdownFileList(BaseModel):
-    files: List[str]
+    files: list[FolderItem]
 
 
 class Raw(BaseModel):

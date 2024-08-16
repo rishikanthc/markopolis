@@ -189,17 +189,50 @@ a:hover {
   scrollbar-width: none; /* Firefox */
 }
 
-.nav_item {
-  font-size: var(--text-03);
+.tree {
+  margin-left: 20px;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-04);
 }
-.nav_item a {
+
+.folder-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-03);
+}
+
+.folder-header .fas.fa-folder {
+  margin-right: var(--spacing-03);
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.folder.expanded .folder-header .fas.fa-folder {
+  color: var(--blue-05); /* Change color to show the folder is open */
+}
+
+.folder-contents {
+  display: none;
+  margin-left: var(--spacing-02);
+  /* padding-left: 10px; */
+  border-left: 2px solid #ccc;
+}
+
+.folder.expanded .folder-contents {
+  display: block;
+}
+
+.file a {
   text-decoration: none;
-  /* color: var(--nav); */
-  /* color: var(--text-secondary); */
   color: var(--link-primary);
 }
-.nav_item a:hover {
+
+.file a:hover {
   color: var(--link-primary-hover);
+  /* text-decoration: underline; */
 }
 
 .search-hint {

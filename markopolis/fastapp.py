@@ -202,12 +202,6 @@ async def load_page(request: Request):
     toc = F.get_headings("home")
     backlinks = F.get_backlinks("home")
 
-    if isinstance(posts, D.Error):
-        logger.warning(f"Error in posts: {posts.error}")
-        posts = []
-    else:
-        posts = posts.files
-
     if isinstance(content, D.Error):
         logger.error(f"Error in content: {content.error}")
         raise HTTPException(
@@ -256,12 +250,6 @@ async def get_note_html(request: Request, path: str):
         content = F.get_note(path)
         toc = F.get_headings(path)
         backlinks = F.get_backlinks(path)
-
-        if isinstance(posts, D.Error):
-            logger.warning(f"Error in posts: {posts.error}")
-            posts = []
-        else:
-            posts = posts.files
 
         if isinstance(content, D.Error):
             logger.error(f"Error in content: {content.error}")
