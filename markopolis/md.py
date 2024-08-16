@@ -1,6 +1,13 @@
 import base64
 from loguru import logger
 import sys
+import markdown
+from .md_extensions import (
+    CalloutExtension,
+    MermaidExtension,
+    StrikethroughExtension,
+    HighlightExtension,
+)
 from markopolis.config import settings
 import yaml
 import os
@@ -140,3 +147,58 @@ def get_frontmatter(note_path: str):
         return frontmatter
     else:
         raise ValueError("Frontmatter not found in the specified markdown file.")
+
+
+def get_note_html(note_path):
+    # Unspluggify the note path to convert hyphens back to spaces
+    unsluggified_path = unsluggify(note_path)
+
+    md_configs = {
+        "mdx_wikilink_plus": {
+            "base_url": f"{settings.domain}",
+        },
+    }
+
+    # Get the root directory from settings
+    md_root = settings.md_path
+
+    # Construct the full path to the markdown file by adding the .md extension
+    full_file_path = os.path.join(md_root, f"{unsluggified_path}.md")
+
+    # Check if the file exists
+    if not os.path.exists(full_file_path):
+        raise FileNotFoundError(f"Note '{unsluggified_path}' not found.")
+
+    # Read the markdown file content
+    with open(full_file_path, "r") as md_file:
+        content_lines = md_file.readlines()
+
+    # Parse the frontmatter and extract the content
+    if content_lines[0].strip() == "---":
+        end_of_yaml = content_lines[1:].index("---\n") + 1
+        content_lines = content_lines[end_of_yaml + 1 :]  # Ignore the frontmatter
+
+    # Join the content lines into a single markdown string
+    markdown_content = "".join(content_lines)
+
+    md = markdown.Markdown(
+        extensions=[
+            "fenced_code",
+            "codehilite",
+            "mdx_wikilink_plus",
+            # WikiLinkExtension(base_url="/", end_url=""),
+            "markdown_checklist.extension",
+            "markdown.extensions.tables",
+            "footnotes",
+            StrikethroughExtension(),
+            HighlightExtension(),
+            MermaidExtension(),
+            CalloutExtension(),
+            # "mdx_math",
+        ],
+        extension_configs=md_configs,
+    )
+    # Convert Markdown to HTML
+    html_content = md.convert(markdown_content)
+
+    return html_content

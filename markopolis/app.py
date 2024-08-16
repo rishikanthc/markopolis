@@ -95,7 +95,7 @@ async def upload_img(img_files: D.ImageFile, api_key: str = Depends(verify_api_k
         raise HTTPException(status_code=500, detail="Failed to write markdown file")
 
 
-@app.get("/api/frontmatter/{path:path}", response_model=D.Frontmatter)
+@app.get("/api/{path:path}/frontmatter", response_model=D.Frontmatter)
 async def get_frontmatter(
     path: str = Path(..., description="The path to the note, including nested folders"),
     api_key: str = Depends(verify_api_key),
@@ -112,6 +112,21 @@ async def get_frontmatter(
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/{path:path}", response_model=D.NoteHtml)
+async def get_note_html(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+    api_key: str = Depends(verify_api_key),
+):
+    try:
+        # Fetch the HTML content
+        html_content = M.get_note_html(path)
+
+        # Return as a NoteHtml response model
+        return D.NoteHtml(html_content=html_content)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 class MarkopolisServer:
