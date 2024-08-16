@@ -99,6 +99,12 @@ class FileWriteItem(BaseModel):
     content: str
 
 
+class ImageWriteItem(BaseModel):
+    filename: str
+    path: str
+    img: str
+
+
 class WriteNotesInput(BaseModel):
     notes: dict[str, str]
 

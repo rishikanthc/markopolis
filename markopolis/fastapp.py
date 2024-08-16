@@ -169,12 +169,13 @@ async def write_notes(notes: D.FileWriteItem, api_key: str = Depends(verify_api_
 
 @app.put("/notes/images/upload")
 async def upload_images(
-    images: D.WriteImagesInput, api_key: str = Depends(verify_api_key)
+    images: D.ImageWriteItem, api_key: str = Depends(verify_api_key)
 ):
     logger.info("UploadImagesResource PUT request received")
     try:
-        result = F.create_images_from_dict(images.images)
-        if result == 200:
+        image_dict = images.model_dump()
+        result = F.write_images(image_dict)
+        if result.status == 200:
             return {"message": "Images uploaded successfully"}
         else:
             raise HTTPException(status_code=500, detail="Failed to upload images")

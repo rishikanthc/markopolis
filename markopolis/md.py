@@ -480,3 +480,41 @@ def write_md_files(md_dict):
     except Exception:
         # If anything goes wrong, return 500
         return 500
+
+
+def write_img_files(img_dict):
+    img_item = None  # Initialize img_item to avoid unbound issues
+    try:
+        # Convert the dict back to ImageWriteItem
+        img_item = D.ImageWriteItem(**img_dict)
+
+        # Create the full path to the file including MDROOT
+        file_path = os.path.join(MDROOT, img_item.path, img_item.filename)
+
+        # Log the file path for debugging
+        logger.debug(f"Attempting to write image to: {file_path}")
+
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # Decode the base64 image string
+        try:
+            img_data = base64.b64decode(img_item.img)
+        except Exception as e:
+            logger.error(f"Error decoding base64 for image {img_item.filename}: {e}")
+            return 500
+
+        # Write the image file to the specified path
+        with open(file_path, "wb") as f:
+            f.write(img_data)
+
+        logger.info(f"Image successfully written to: {file_path}")
+        return 200
+
+    except Exception as e:
+        # Log the exception with details, handling img_item being None
+        if img_item:
+            logger.error(f"Failed to write image {img_item.filename}: {e}")
+        else:
+            logger.error(f"Failed to create ImageWriteItem: {e}")
+        return 500
