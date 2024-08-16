@@ -1,8 +1,9 @@
 import uvicorn
 import fire
-from fastapi import FastAPI, HTTPException, Depends, Header
+from fastapi import FastAPI, HTTPException, Depends, Header, Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import markopolis.dantic as D
 import markopolis.md as M
@@ -92,6 +93,25 @@ async def upload_img(img_files: D.ImageFile, api_key: str = Depends(verify_api_k
         return {"message": "Files written"}
     else:
         raise HTTPException(status_code=500, detail="Failed to write markdown file")
+
+
+@app.get("/api/frontmatter/{path:path}", response_model=D.Frontmatter)
+async def get_frontmatter(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+    api_key: str = Depends(verify_api_key),
+):
+    try:
+        # Fetch the frontmatter
+        frontmatter_data = M.get_frontmatter(path)
+
+        # Create an instance of the Frontmatter dataclass
+        frontmatter = D.Frontmatter(**frontmatter_data)
+
+        return JSONResponse(content=frontmatter.model_dump())
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 class MarkopolisServer:

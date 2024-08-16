@@ -43,6 +43,11 @@ def write_md_files(md_file_dict):
             if "title" not in parsed_yaml:
                 parsed_yaml["title"] = filename_without_ext
 
+            # Add or update the 'markopolis.fpath' field with the relative file path
+            if "markopolis" not in parsed_yaml:
+                parsed_yaml["markopolis"] = {}
+            parsed_yaml["markopolis"]["fpath"] = file_path
+
             # Rebuild the content with updated YAML frontmatter
             updated_yaml = yaml.dump(parsed_yaml, default_flow_style=False)
             file_content = f"---\n{updated_yaml}---\n" + "\n".join(
@@ -90,3 +95,48 @@ def write_images(img_file_dict):
         # Log the error if necessary
         print(f"Error writing image file: {e}")
         return -1  # Error
+
+
+def unsluggify(slug: str) -> str:
+    return slug.replace("-", " ")
+
+
+def get_frontmatter(note_path: str):
+    # Unspluggify the note path to convert hyphens back to spaces
+    unsluggified_path = unsluggify(note_path)
+
+    # Get the root directory from settings
+    md_root = settings.md_path
+
+    # Construct the full path to the markdown file by adding the .md extension
+    full_file_path = os.path.join(md_root, f"{unsluggified_path}.md")
+
+    # Check if the file exists
+    if not os.path.exists(full_file_path):
+        raise FileNotFoundError(f"Note '{unsluggified_path}' not found.")
+
+    # Read the file content
+    with open(full_file_path, "r") as md_file:
+        content_lines = md_file.readlines()
+
+    # Parse the frontmatter from the markdown file
+    if content_lines[0].strip() == "---":
+        end_of_yaml = content_lines[1:].index("---\n") + 1
+        yaml_frontmatter = "".join(content_lines[1:end_of_yaml])
+        parsed_yaml = yaml.safe_load(yaml_frontmatter)
+
+        # Convert to the Frontmatter dataclass structure
+        frontmatter = {
+            "title": parsed_yaml.get("title", unsluggified_path),
+            "date": parsed_yaml.get("date", None),
+            "tags": parsed_yaml.get("tags", []),
+            "custom_fields": {
+                key: value
+                for key, value in parsed_yaml.items()
+                if key not in ["title", "date", "tags"]
+            },
+        }
+
+        return frontmatter
+    else:
+        raise ValueError("Frontmatter not found in the specified markdown file.")

@@ -1,4 +1,6 @@
 ---
+markopolis:
+  fpath: Contributing.md
 publish: true
 tags:
 - development

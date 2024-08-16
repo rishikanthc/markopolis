@@ -1,4 +1,6 @@
 ---
+markopolis:
+  fpath: f1/test.md
 publish: true
 title: test
 ---
