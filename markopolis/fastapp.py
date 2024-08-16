@@ -291,6 +291,18 @@ async def get_note_html(request: Request, path: str):
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+@app.delete("/notes/{note_title}/delete", response_model=D.Status)
+async def delete_note(note_title: str, api_key: str = Depends(verify_api_key)):
+    # Verify API key using the Depends mechanism
+    result = F.delete_note_by_title(note_title)
+
+    # Check the deletion result
+    if result.status == 0:
+        return result
+    else:
+        raise HTTPException(status_code=404, detail="Note not found or deletion failed")
+
+
 class MarkopolisServer:
     @staticmethod
     def run(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):

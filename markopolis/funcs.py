@@ -26,6 +26,7 @@ from .md import (
     create_markdown_files,
     write_md_files,
     write_img_files,
+    delete_by_title,
 )
 
 
@@ -120,6 +121,12 @@ def write_md(md_dict):
 
 def write_images(image_dict):
     result = write_img_files(image_dict)
+
+    return Status(status=result)
+
+
+def delete_note_by_title(note_title):
+    result = delete_by_title(note_title)
 
     return Status(status=result)
 

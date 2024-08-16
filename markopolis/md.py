@@ -1,4 +1,5 @@
 import os
+import sh
 import base64
 import markdown
 import markopolis.data_dantic as D
@@ -518,3 +519,32 @@ def write_img_files(img_dict):
         else:
             logger.error(f"Failed to create ImageWriteItem: {e}")
         return 500
+
+
+def delete_by_title(note_title):
+    pth = settings.md_path
+    note_title = note_title.replace("-", " ")
+    search_pattern = f"title: {note_title}"
+
+    try:
+        rg = sh.Command("rg")
+        result = rg("-l", "-i", search_pattern, pth, _err_to_out=True)
+
+        if result is not None:
+            matches = result.splitlines()
+            path_pattern = r"(\/[^\s\x1b]+|[a-zA-Z]:\\[^\s\x1b]+)"
+
+            # Find all matching paths using the regex
+            paths = [re.findall(path_pattern, fp) for fp in matches]
+            logger.debug(f"delete path: {paths}")
+
+            if len(paths) > 1:
+                return 120
+            else:
+                os.remove(paths[0][0])
+                return 0
+        else:
+            return 1
+
+    except sh.ErrorReturnCode as e:
+        return e.exit_code
