@@ -1,401 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ title }}</title>
+        <link rel="stylesheet" href="/static/fonts.css" />
+        <link rel="stylesheet" href="/static/styles.css" />
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ title }}</title>
-  <link rel="stylesheet" href="/static/fonts.css">
-  <link rel="stylesheet" href="/static/styles.css">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+            integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+"
+            crossorigin="anonymous"
+        />
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
-    integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+            integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
+            crossorigin="anonymous"
+        ></script>
 
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
-    integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg"
-    crossorigin="anonymous"></script>
+        <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+            integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk"
+            crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"
+        ></script>
 
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-    integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous"
-    onload="renderMathInElement(document.body);"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
+            id="light-theme"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css"
+            id="dark-theme"
+            disabled
+        />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
-    id="light-theme">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/dark.min.css"
-    id="dark-theme" disabled>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="/static/js/callouts.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="/static/js/filetree.js"></script>
+        <script src="/static/js/callouts.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-  <script>mermaid.initialize({startOnLoad: true});</script>
-</head>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+        <script>
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+    </head>
 
-<body>
-  <div class="main">
-    <div class="left">
-      <div class="mobile-header">
-        <button id="menu-toggle" aria-label="Toggle menu">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="mobile-logo"><a href="{{base_url}}/home">{{ title }}</a></div>
-        <button id="search-toggle" aria-label="Toggle search">
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-      <div class="sidebar-content">
-        <div class="bar">
-          <div class="logo"><a href="{{base_url}}/home">{{ title }}</a></div>
-        </div>
-        <div class="mobile-theme-toggle">
-          <div id="theme-switcher" class="switcher" role="button" tabindex="0" aria-label="Toggle dark mode">
-            <span id="theme-text">Dark mode</span>
-            <span class="theme-icon">
-              <i class="fas fa-sun"></i>
-              <i class="fas fa-moon"></i>
-            </span>
-          </div>
-        </div>
+    <body>
+        <div class="main">
+            <div class="sidebar">
+                <div class="title">{{site_title}}</div>
+                <div class="theme-toggle">
+                    <div
+                        id="theme-switcher"
+                        class="switcher"
+                        role="button"
+                        tabindex="0"
+                        aria-label="Toggle dark mode"
+                    >
+                        <span id="theme-text">Dark mode</span>
+                        <span class="theme-icon">
+                            <i class="fas fa-sun"></i>
+                            <i class="fas fa-moon"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="menu">
+                    {% macro render_folder(folder, parent_id) %} {% for member
+                    in folder.members %} {% if member.filename %}
+                    <div class="file">
+                        <a href="{{ member.link }}">
+                            <i class="fas fa-file"></i> {{ member.filename }}
+                        </a>
+                    </div>
+                    {% elif member.folder_name %}
+                    <div class="folder">
+                        <button
+                            class="folder-btn"
+                            onclick="toggleFolder('{{ parent_id }}-{{ member.folder_name | replace('/', '-') }}')"
+                        >
+                            <i class="fas fa-folder"></i> {{ member.folder_name
+                            }}
+                        </button>
+                        <div
+                            id="{{ parent_id }}-{{ member.folder_name | replace('/', '-') }}"
+                            class="folder-content"
+                        >
+                            {{ render_folder(member, parent_id ~ '-' ~
+                            member.folder_name | replace('/', '-')) }}
+                        </div>
+                    </div>
+                    {% endif %} {% endfor %} {% endmacro %}
 
-        {% macro render_members(members) %}
-        <div class="tree">
-          {% for member in members %}
-          {% if member.folder is defined %}
-          <div class="folder">
-            <div class="folder-header">
-              <i class="fas fa-folder"></i> <!-- Folder icon -->
-              <!-- <span class="folder-toggle">▶</span> -->
-              <span class="folder-name">{{ member.folder }}</span>
+                    <!-- Render root level directly without it being a collapsible folder -->
+                    {% for member in notes_list.root.members %} {% if
+                    member.filename %}
+                    <div class="file">
+                        <a href="{{ member.link }}">
+                            <i class="fas fa-file"></i> {{ member.filename }}
+                        </a>
+                    </div>
+                    {% elif member.folder_name %}
+                    <div class="folder">
+                        <button
+                            class="folder-btn"
+                            onclick="toggleFolder('root-{{ member.folder_name | replace('/', '-') }}')"
+                        >
+                            <i class="fas fa-folder"></i> {{ member.folder_name
+                            }}
+                        </button>
+                        <div
+                            id="root-{{ member.folder_name | replace('/', '-') }}"
+                            class="folder-content"
+                        >
+                            {{ render_folder(member, 'root-' ~
+                            member.folder_name | replace('/', '-')) }}
+                        </div>
+                    </div>
+                    {% endif %} {% endfor %}
+                </div>
+                <div class="hint">Press Ctrl-k to search</div>
             </div>
-            <div class="folder-contents">
-              {{ render_members(member.members) }}
+            <div class="page">
+                <div class="page_title">
+                    <h1>{{ frontmatter.title}}</h1>
+                    <div class="tags">
+                        {% for tag in frontmatter.tags %}
+                        <div class="tag">{{ tag }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="content">{{ content }}</div>
             </div>
-          </div>
-          {% elif member.title is defined and member.link is defined %}
-          <div class="file">
-            <a href="{{ base_url }}/{{ member.link }}">{{ member.title }}</a>
-          </div>
-          {% endif %}
-          {% endfor %}
+            <div class="panel"></div>
         </div>
-        {% endmacro %}
-        <div class="nav-wrapper">
-          <div class="nav">
-            {% if posts.files %}
-            {{ render_members(posts.files[0].members) }}
-            {% else %}
-            <p>No files available</p>
-            {% endif %}
-          </div>
-        </div>
-        <div class="search-hint">
-          <span class="shortcut-key">Press Ctrl+K</span> to search
-        </div>
-      </div>
-    </div>
-    <div class="right">
-      <div class="page">
-        <div class="page_left">
-          {% if meta %}
-          <div class="title">
-            <h1>{{ meta.title }}</h1>
-            <div class="tags">
-              {% for tag in meta.tags %}
-              <div class="tag">{{ tag }}</div>
-              {% endfor %}
-            </div>
-            <div class="date">
-            </div>
-          </div>
-          {% endif %}
-
-          <div class="content">
-            {{ content | add_heading_ids | safe }}
-          </div>
-
-          <div class="mobile-backlinks">
-            {% if backlinks and backlinks.backlinks %}
-            <h3>BACKLINKS</h3>
-            <div class="backlinks-container">
-              {% for backlink in backlinks.backlinks %}
-              <div class="backlink-item">
-                <a href="{{base_url}}/{{ backlink.link }}" rel="noopener noreferrer">
-                  {{ backlink.title }}
-                </a>
-              </div>
-              {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-        </div>
-        <div class="page_right">
-          <div class="toc">
-            {% if toc %}
-            <h3>ON THIS PAGE</h3>
-            {% macro render_toc(items, level=0) %}
-            <div class="toc-level" style="padding-left: {{ 15 }}px;">
-              {% for key, item in items.items() %}
-              <div class="toc-item">
-                <a href="#{{ item.title | slugify }}">{{ item.title }}</a>
-                {% if item.children %}
-                {{ render_toc(item.children, level + 1) }}
-                {% endif %}
-              </div>
-              {% endfor %}
-            </div>
-            {% endmacro %}
-
-            {{ render_toc(toc.headings) }}
-            {% endif %}
-          </div>
-          <div class="backlinks">
-            {% if backlinks and backlinks.backlinks %}
-            <h3>BACKLINKS</h3>
-            <div class="backlinks-container">
-              {% for backlink in backlinks.backlinks %}
-              <div class="backlink-item">
-                <a href="{{base_url}}/{{ backlink.link }}" rel="noopener noreferrer">
-                  {{ backlink.title }}
-                </a>
-              </div>
-              {% endfor %}
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="command-palette">
-    <input type="text" id="search-input" placeholder="Search notes...">
-    <div id="search-results"></div>
-  </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const tocItems = document.querySelectorAll('.toc-item a');
-      const sections = Array.from(tocItems).map(item => {
-        const targetId = item.getAttribute('href').substring(1);
-        return document.getElementById(targetId);
-      });
-
-      const pageLeft = document.querySelector('.page_left');
-      const sensitivityOffset = 200;
-
-      pageLeft.addEventListener('scroll', () => {
-        let currentActiveIndex = -1;
-
-        sections.forEach((section, index) => {
-          if (section) {
-            const rect = section.getBoundingClientRect();
-            const pageLeftRect = pageLeft.getBoundingClientRect();
-
-            if (rect.top <= pageLeftRect.top + sensitivityOffset && (index === sections.length - 1 || sections[index + 1].getBoundingClientRect().top > pageLeftRect.top + sensitivityOffset)) {
-              currentActiveIndex = index;
-            }
-          }
-        });
-
-        tocItems.forEach((item, index) => {
-          if (index === currentActiveIndex) {
-            item.parentElement.classList.add('active');
-          } else {
-            item.parentElement.classList.remove('active');
-          }
-        });
-      });
-
-      const themeSwitcher = document.getElementById('theme-switcher');
-      const themeText = document.getElementById('theme-text');
-      const currentTheme = localStorage.getItem('theme') || 'light';
-
-      document.documentElement.setAttribute('data-theme', currentTheme);
-      updateThemeToggle(currentTheme);
-      updateHighlightTheme(currentTheme);
-
-      themeSwitcher.addEventListener('click', toggleTheme);
-      themeSwitcher.addEventListener('touchend', function (e) {
-        e.preventDefault();
-        toggleTheme();
-      });
-      themeSwitcher.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleTheme();
-        }
-      });
-
-      function toggleTheme() {
-        let theme = document.documentElement.getAttribute('data-theme');
-        theme = theme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        updateThemeToggle(theme);
-        updateHighlightTheme(theme);
-      }
-
-      function updateThemeToggle(theme) {
-        if (theme === 'dark') {
-          themeSwitcher.classList.add('dark');
-          themeSwitcher.setAttribute('aria-label', 'Switch to light mode');
-          themeText.textContent = 'Light mode';
-        } else {
-          themeSwitcher.classList.remove('dark');
-          themeSwitcher.setAttribute('aria-label', 'Switch to dark mode');
-          themeText.textContent = 'Dark mode';
-        }
-      }
-
-      function updateHighlightTheme(theme) {
-        document.getElementById('light-theme').disabled = (theme === 'dark');
-        document.getElementById('dark-theme').disabled = (theme === 'light');
-      }
-
-      const searchInput = document.getElementById('search-input');
-      const searchResults = document.getElementById('search-results');
-      const commandPalette = document.querySelector('.command-palette');
-      let activeIndex = -1;
-
-      document.addEventListener('keydown', function (event) {
-        if (event.ctrlKey && event.key === 'k') {
-          event.preventDefault();
-          toggleCommandPalette();
-        }
-      });
-
-      document.addEventListener('click', function (event) {
-        if (!commandPalette.contains(event.target) && !event.target.matches('#search-toggle')) {
-          commandPalette.style.display = 'none';
-        }
-      });
-
-      document.addEventListener('touchend', function (event) {
-        if (!commandPalette.contains(event.target) && !event.target.matches('#search-toggle')) {
-          commandPalette.style.display = 'none';
-        }
-      });
-
-      document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-          commandPalette.style.display = 'none';
-        }
-      });
-
-      if (searchInput) {
-        searchInput.addEventListener('input', async function () {
-          const query = searchInput.value.trim();
-          if (query.length > 0) {
-            const response = await fetch(`{{base_url}}/notes/search/full/${query}`);
-            const results = await response.json();
-            searchResults.innerHTML = results.results.map(result => {
-              const filePath = result.file_path;
-              const fileNameWithoutExtension = filePath.replace(/\.md$/, '');
-              return `
-              <div class="search-result">
-                <a href="/${fileNameWithoutExtension}">
-                  <strong>${fileNameWithoutExtension}</strong>: ${result.snippet}
-                </a>
-              </div>
-            `;
-            }).join('');
-            searchResults.style.display = 'block';
-            activeIndex = -1;
-          } else {
-            searchResults.innerHTML = '';
-            searchResults.style.display = 'none';
-          }
-        });
-
-        document.addEventListener('keydown', function (event) {
-          const results = document.querySelectorAll('.search-result');
-          if (commandPalette.style.display === 'block' && results.length > 0) {
-            if (event.key === 'ArrowDown') {
-              event.preventDefault();
-              activeIndex = (activeIndex + 1) % results.length;
-              updateActiveResult(results);
-            } else if (event.key === 'ArrowUp') {
-              event.preventDefault();
-              activeIndex = (activeIndex - 1 + results.length) % results.length;
-              updateActiveResult(results);
-            } else if (event.key === 'Enter' && activeIndex >= 0) {
-              results[activeIndex].querySelector('a').click();
-            }
-          }
-        });
-
-        function updateActiveResult(results) {
-          results.forEach((result, index) => {
-            if (index === activeIndex) {
-              result.classList.add('active-result');
-              result.scrollIntoView({block: 'nearest'});
-            } else {
-              result.classList.remove('active-result');
-            }
-          });
-        }
-
-        searchInput.addEventListener('click', function (event) {
-          event.stopPropagation();
-        });
-      }
-
-      // Mobile menu toggle
-      const menuToggle = document.getElementById('menu-toggle');
-      const sidebar = document.querySelector('.left');
-
-      function toggleSidebar(event) {
-        event.preventDefault();
-        sidebar.classList.toggle('active');
-      }
-
-      menuToggle.addEventListener('click', toggleSidebar);
-      menuToggle.addEventListener('touchend', toggleSidebar);
-
-      // Mobile search toggle
-      const searchToggle = document.getElementById('search-toggle');
-
-      function handleSearchToggle(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        toggleCommandPalette();
-      }
-
-      searchToggle.addEventListener('click', handleSearchToggle);
-      searchToggle.addEventListener('touchend', handleSearchToggle);
-
-      function toggleCommandPalette() {
-        if (commandPalette.style.display === 'block') {
-          commandPalette.style.display = 'none';
-        } else {
-          commandPalette.style.display = 'block';
-          searchInput.focus();
-        }
-      }
-    });
-
-    document.addEventListener('DOMContentLoaded', function () {
-      document.querySelectorAll('.folder-header').forEach(function (header) {
-        header.addEventListener('click', function () {
-          const folder = header.parentElement;
-          const contents = folder.querySelector('.folder-contents');
-          const icon = header.querySelector('.fas.fa-folder'); // Select the folder icon
-
-          folder.classList.toggle('expanded');
-          icon.classList.toggle('fa-folder-open'); // Switch to open folder icon
-
-          if (folder.classList.contains('expanded')) {
-            contents.style.display = 'block';
-          } else {
-            contents.style.display = 'none';
-          }
-        });
-      });
-    });
-
-    hljs.highlightAll();
-  </script>
-</body>
-
+        <script>
+            hljs.highlightAll();
+        </script>
+        <script src="/static/js/theme.js"></script>
+    </body>
 </html>

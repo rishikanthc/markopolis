@@ -1,9 +1,9 @@
 import uvicorn
 import fire
-from fastapi import FastAPI, HTTPException, Depends, Header, Path
+from fastapi import FastAPI, HTTPException, Depends, Header, Path, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 import markopolis.dantic as D
 import markopolis.md as M
@@ -73,6 +73,11 @@ async def hello_world(api_key: str = Depends(verify_api_key)):
     return {"message": "Hello, World!"}
 
 
+@app.get("/api/notes/ls", response_model=D.FileTree)
+async def list_all_notes():
+    return M.list_notes()
+
+
 @app.put("/api/upload/md")
 async def upload_md(mdfiles: D.MDFile, api_key: str = Depends(verify_api_key)):
     md_file_dict = mdfiles.model_dump()
@@ -126,7 +131,28 @@ async def get_note_html(
         # Return as a NoteHtml response model
         return D.NoteHtml(html_content=html_content)
     except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/{path:path}", response_class=HTMLResponse)
+async def load_page(request: Request, path: str):
+    try:
+        frontmatter = M.get_frontmatter(path)
+        html_content = M.get_note_html(path)
+        notes_list = M.list_notes().model_dump()
+
+        return templates.TemplateResponse(
+            "page.html",
+            {
+                "request": request,
+                "frontmatter": frontmatter,
+                "content": html_content,
+                "site_title": settings.title,
+                "notes_list": notes_list,
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 class MarkopolisServer:

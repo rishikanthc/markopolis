@@ -22,3 +22,17 @@ class Frontmatter(BaseModel):
 
 class NoteHtml(BaseModel):
     html_content: str
+
+
+class File(BaseModel):
+    filename: str
+    link: str
+
+
+class Folder(BaseModel):
+    folder_name: str
+    members: "List[File | Folder]"
+
+
+class FileTree(BaseModel):
+    root: Folder

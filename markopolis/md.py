@@ -11,6 +11,8 @@ from .md_extensions import (
 from markopolis.config import settings
 import yaml
 import os
+from pathlib import Path
+import markopolis.dantic as D
 
 logger.remove()
 logger.add(sys.stdout, level="DEBUG")
@@ -202,3 +204,41 @@ def get_note_html(note_path):
     html_content = md.convert(markdown_content)
 
     return html_content
+
+
+def list_notes() -> D.FileTree:
+    md_root = Path(settings.md_path)
+
+    def build_file_tree(root_path: Path, current_path: str = "") -> D.Folder:
+        members = []
+        folder_name = root_path.name
+
+        if current_path == "":
+            updated_path = f"{settings.domain}"
+        else:
+            updated_path = f"{current_path}/{folder_name}".lstrip("/")
+
+        # List files and sort them lexicographically
+        files = sorted(root_path.glob("*.md"), key=lambda f: f.name)
+        for file in files:
+            file_obj = D.File(
+                filename=file.name.split(".")[0],
+                link=f"/{updated_path}/{file.stem}".lstrip("/"),
+            )
+            members.append(file_obj)
+
+        # Recursively add subfolders and sort them lexicographically
+        subfolders = sorted(
+            [subfolder for subfolder in root_path.iterdir() if subfolder.is_dir()],
+            key=lambda f: f.name,
+        )
+        for subfolder in subfolders:
+            subfolder_obj = build_file_tree(subfolder, updated_path)
+            members.append(subfolder_obj)
+
+        return D.Folder(folder_name=folder_name, members=members)
+
+    # Start the recursive process from the root folder
+    root_folder = build_file_tree(md_root)
+
+    return D.FileTree(root=root_folder)
