@@ -299,10 +299,13 @@ def find_backlinks(target_file):
                 # Clean the path
                 clean_match = clean_path(match)
 
+                # Get the relative path from the md_path
+                relative_path = os.path.relpath(clean_match, pth)
+
                 # Extract title from the YAML frontmatter of the matched markdown file
                 title = extract_title_from_frontmatter(clean_match)
                 if title:
-                    backlink = D.Backlink(title=title, path=clean_match.split(".")[0])
+                    backlink = D.Backlink(title=title, path=relative_path.split(".")[0])
                     backlinks_list.append(backlink)
                 else:
                     logger.debug(f"No title found in {clean_match}")

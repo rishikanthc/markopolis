@@ -49,6 +49,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
         <script src="/static/js/filetree.js"></script>
         <script src="/static/js/callouts.js"></script>
+        <script src="/static/js/menu.js"></script>
 
         <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
         <script>
@@ -58,91 +59,118 @@
 
     <body>
         <div class="main">
+            <div class="mobile-top-bar">
+                <button id="menu-toggle" class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="mobile-title">{{site_title}}</div>
+            </div>
             <div class="sidebar">
-                <div class="title">{{site_title}}</div>
-                <div class="theme-toggle">
-                    <div
-                        id="theme-switcher"
-                        class="switcher"
-                        role="button"
-                        tabindex="0"
-                        aria-label="Toggle dark mode"
-                    >
-                        <span id="theme-text">Dark mode</span>
-                        <span class="theme-icon">
-                            <i class="fas fa-sun"></i>
-                            <i class="fas fa-moon"></i>
-                        </span>
-                    </div>
-                </div>
-                <div class="menu">
-                    {% macro render_folder(folder, parent_id) %} {% for member
-                    in folder.members %} {% if member.filename %}
-                    <div class="file">
-                        <a href="{{ member.link }}">
-                            <i class="fas fa-file"></i> {{ member.filename }}
-                        </a>
-                    </div>
-                    {% elif member.folder_name %}
-                    <div class="folder">
-                        <button
-                            class="folder-btn"
-                            onclick="toggleFolder('{{ parent_id }}-{{ member.folder_name | replace('/', '-') }}')"
-                        >
-                            <i class="fas fa-folder"></i> {{ member.folder_name
-                            }}
-                        </button>
+                <div class="sidebar-header">
+                    <div class="title">{{site_title}}</div>
+                    <div class="theme-toggle">
                         <div
-                            id="{{ parent_id }}-{{ member.folder_name | replace('/', '-') }}"
-                            class="folder-content"
+                            id="theme-switcher"
+                            class="switcher"
+                            role="button"
+                            tabindex="0"
+                            aria-label="Toggle dark mode"
                         >
-                            {{ render_folder(member, parent_id ~ '-' ~
-                            member.folder_name | replace('/', '-')) }}
+                            <span id="theme-text">Dark mode</span>
+                            <span class="theme-icon">
+                                <i class="fas fa-sun"></i>
+                                <i class="fas fa-moon"></i>
+                            </span>
                         </div>
                     </div>
-                    {% endif %} {% endfor %} {% endmacro %}
 
-                    <!-- Render root level directly without it being a collapsible folder -->
-                    {% for member in notes_list.root.members %} {% if
-                    member.filename %}
-                    <div class="file">
-                        <a href="{{ member.link }}">
-                            <i class="fas fa-file"></i> {{ member.filename }}
-                        </a>
-                    </div>
-                    {% elif member.folder_name %}
-                    <div class="folder">
-                        <button
-                            class="folder-btn"
-                            onclick="toggleFolder('root-{{ member.folder_name | replace('/', '-') }}')"
-                        >
-                            <i class="fas fa-folder"></i> {{ member.folder_name
-                            }}
-                        </button>
-                        <div
-                            id="root-{{ member.folder_name | replace('/', '-') }}"
-                            class="folder-content"
-                        >
-                            {{ render_folder(member, 'root-' ~
-                            member.folder_name | replace('/', '-')) }}
+                    <div class="menu">
+                        {% macro render_folder(folder, parent_id) %} {% for
+                        member in folder.members %} {% if member.filename %}
+                        <div class="file">
+                            <a href="{{ member.link }}">
+                                <i class="fas fa-file"></i> {{ member.filename
+                                }}
+                            </a>
                         </div>
+                        {% elif member.folder_name %}
+                        <div class="folder">
+                            <button
+                                class="folder-btn"
+                                onclick="toggleFolder('{{ parent_id }}-{{ member.folder_name | replace('/', '-') }}')"
+                            >
+                                <i class="fas fa-folder"></i> {{
+                                member.folder_name }}
+                            </button>
+                            <div
+                                id="{{ parent_id }}-{{ member.folder_name | replace('/', '-') }}"
+                                class="folder-content"
+                            >
+                                {{ render_folder(member, parent_id ~ '-' ~
+                                member.folder_name | replace('/', '-')) }}
+                            </div>
+                        </div>
+                        {% endif %} {% endfor %} {% endmacro %}
+
+                        <!-- Render root level directly without it being a collapsible folder -->
+                        {% for member in notes_list.root.members %} {% if
+                        member.filename %}
+                        <div class="file">
+                            <a href="{{ member.link }}">
+                                <i class="fas fa-file"></i> {{ member.filename
+                                }}
+                            </a>
+                        </div>
+                        {% elif member.folder_name %}
+                        <div class="folder">
+                            <button
+                                class="folder-btn"
+                                onclick="toggleFolder('root-{{ member.folder_name | replace('/', '-') }}')"
+                            >
+                                <i class="fas fa-folder"></i> {{
+                                member.folder_name }}
+                            </button>
+                            <div
+                                id="root-{{ member.folder_name | replace('/', '-') }}"
+                                class="folder-content"
+                            >
+                                {{ render_folder(member, 'root-' ~
+                                member.folder_name | replace('/', '-')) }}
+                            </div>
+                        </div>
+                        {% endif %} {% endfor %}
                     </div>
-                    {% endif %} {% endfor %}
+                    <div class="hint">Press Ctrl-k to search</div>
                 </div>
-                <div class="hint">Press Ctrl-k to search</div>
             </div>
             <div class="page">
-                <div class="page_title">
-                    <h1>{{ frontmatter.title}}</h1>
-                    <div class="tags">
-                        {% for tag in frontmatter.tags %}
-                        <div class="tag">{{ tag }}</div>
+                <div class="page_inner">
+                    <div class="content">
+                        <div class="page_title">
+                            <h1>{{ frontmatter.title}}</h1>
+                            <div class="tags">
+                                {% for tag in frontmatter.tags %}
+                                <div class="tag">{{ tag }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {{ content }}
+                    </div>
+
+                    <div class="panel">
+                        <h3>BACKLINKS</h3>
+                        {% for backlink in backlinks.backlinks %}
+                        <div class="backlinks">
+                            <a href="{{base_url}}/{{ backlink.path }}"
+                                >{{ backlink.title }}</a
+                            >
+                        </div>
+                        {% else %}
+                        <div class="backlinks">No backlinks found</div>
                         {% endfor %}
                     </div>
                 </div>
-                <div class="content">{{ content }}</div>
             </div>
-            <div class="panel"></div>
         </div>
         <script>
             hljs.highlightAll();

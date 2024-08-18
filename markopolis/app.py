@@ -157,6 +157,7 @@ async def load_page(request: Request, path: str):
         frontmatter = M.get_frontmatter(path)
         html_content = M.get_note_html(path)
         notes_list = M.list_notes().model_dump()
+        backlinks = M.find_backlinks(path).model_dump()
 
         return templates.TemplateResponse(
             "page.html",
@@ -166,6 +167,8 @@ async def load_page(request: Request, path: str):
                 "content": html_content,
                 "site_title": settings.title,
                 "notes_list": notes_list,
+                "backlinks": backlinks,
+                "base_url": settings.domain,
             },
         )
     except Exception as e:
