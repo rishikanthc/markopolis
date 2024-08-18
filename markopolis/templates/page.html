@@ -34,6 +34,22 @@
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
         />
 
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+            rel="stylesheet"
+        />
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap"
+            rel="stylesheet"
+        />
+
         <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css"
@@ -45,7 +61,6 @@
             id="dark-theme"
             disabled
         />
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
         <script src="/static/js/filetree.js"></script>
         <script src="/static/js/callouts.js"></script>
@@ -64,6 +79,9 @@
                     <i class="fas fa-bars"></i>
                 </button>
                 <div class="mobile-title">{{site_title}}</div>
+                <button id="search-toggle" aria-label="Toggle search">
+                    <i class="fas fa-search"></i>
+                </button>
             </div>
             <div class="sidebar">
                 <div class="sidebar-header">
@@ -154,27 +172,62 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        {{ content }}
+                        {{ content | add_heading_ids | safe }}
                     </div>
 
                     <div class="panel">
-                        <h3>BACKLINKS</h3>
-                        {% for backlink in backlinks.backlinks %}
-                        <div class="backlinks">
-                            <a href="{{base_url}}/{{ backlink.path }}"
-                                >{{ backlink.title }}</a
+                        <div class="toc">
+                            {% if toc %}
+                            <h3>ON THIS PAGE</h3>
+                            {% macro render_toc(items, level=0) %}
+                            <div
+                                class="toc-level"
+                                style="padding-left: {{ 15 }}px;"
                             >
+                                {% for key, item in items.items() %}
+                                <div class="toc-item">
+                                    <a href="#{{ item.title | slugify }}"
+                                        >{{ item.title }}</a
+                                    >
+                                    {% if item.children %} {{
+                                    render_toc(item.children, level + 1) }} {%
+                                    endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endmacro %} {{ render_toc(toc.headings) }} {%
+                            endif %}
                         </div>
-                        {% else %}
-                        <div class="backlinks">No backlinks found</div>
-                        {% endfor %}
+
+                        <div class="backlinks">
+                            <h3>BACKLINKS</h3>
+                            <div class="backlinks_inner">
+                                {% for backlink in backlinks.backlinks %}
+                                <a href="{{base_url}}/{{ backlink.path }}"
+                                    >{{ backlink.title }}</a
+                                >
+                                {% else %} No backlinks found
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="command-palette">
+            <input
+                type="text"
+                id="search-input"
+                placeholder="Search notes..."
+            />
+            <div id="search-results"></div>
+        </div>
         <script>
             hljs.highlightAll();
         </script>
+        <script src="/static/js/search.js"></script>
         <script src="/static/js/theme.js"></script>
+        <script src="/static/js/toc.js"></script>
     </body>
 </html>

@@ -1,6 +1,6 @@
 import uvicorn
 import fire
-from fastapi import FastAPI, HTTPException, Depends, Header, Path, Request
+from fastapi import FastAPI, HTTPException, Depends, Header, Path, Request, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import JSONResponse, HTMLResponse
@@ -100,6 +100,21 @@ async def upload_img(img_files: D.ImageFile, api_key: str = Depends(verify_api_k
         raise HTTPException(status_code=500, detail="Failed to write markdown file")
 
 
+@app.get("/api/search/{query}", response_model=D.NoteSearchFull)
+async def search_notes_full_text(
+    query: str = Path(..., description="The search query"),
+    max_dist: int = Query(
+        default=2, description="Maximum edit distance for fuzzy search"
+    ),
+):
+    logger.info(
+        f"Full text search GET request received with query: {query}, max_dist: {max_dist}"
+    )
+    results = M.fuzzy_search_in_text(query, max_dist)
+    logger.info(f"Search completed. Number of results: {len(results.results)}")
+    return results
+
+
 @app.get("/api/{path:path}/frontmatter", response_model=D.Frontmatter)
 async def get_frontmatter(
     path: str = Path(..., description="The path to the note, including nested folders"),
@@ -136,6 +151,27 @@ async def get_backlinks(note_path: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/{path:path}/toc", response_model=D.ToC)
+async def get_toc_endpoint(
+    path: str = Path(..., description="The path to the note, including nested folders"),
+    api_key: str = Depends(verify_api_key),
+):
+    try:
+        # Fetch the Table of Contents
+        toc_data = M.get_toc(path)
+
+        # Create an instance of the ToC dataclass
+        toc = D.ToC(headings=toc_data.headings)
+
+        return JSONResponse(content=toc.model_dump_json())
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/{path:path}", response_model=D.NoteHtml)
 async def get_note_html(
     path: str = Path(..., description="The path to the note, including nested folders"),
@@ -158,6 +194,7 @@ async def load_page(request: Request, path: str):
         html_content = M.get_note_html(path)
         notes_list = M.list_notes().model_dump()
         backlinks = M.find_backlinks(path).model_dump()
+        toc = M.get_toc(path).model_dump()
 
         return templates.TemplateResponse(
             "page.html",
@@ -169,6 +206,7 @@ async def load_page(request: Request, path: str):
                 "notes_list": notes_list,
                 "backlinks": backlinks,
                 "base_url": settings.domain,
+                "toc": toc,
             },
         )
     except Exception as e:

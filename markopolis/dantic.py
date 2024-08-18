@@ -45,3 +45,25 @@ class Backlink(BaseModel):
 
 class Backlinks(BaseModel):
     backlinks: List[Backlink]
+
+
+class NoteSearch(BaseModel):
+    matches: list[str]
+
+
+class FuzzySearchResult(BaseModel):
+    file_path: str
+    snippet: str
+
+
+class NoteSearchFull(BaseModel):
+    results: list[FuzzySearchResult]
+
+
+class ToCItem(BaseModel):
+    title: str
+    children: Dict[str, "ToCItem"] = Field(default_factory=dict)
+
+
+class ToC(BaseModel):
+    headings: Dict[str, ToCItem]

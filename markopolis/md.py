@@ -2,6 +2,7 @@ import base64
 from loguru import logger
 import sys
 import re
+import regex as mre
 import sh
 import markdown
 from .md_extensions import (
@@ -330,3 +331,102 @@ def find_backlinks(target_file):
     # Create the Backlinks object from the collected backlinks
     backlinks_object = D.Backlinks(backlinks=backlinks_list)
     return backlinks_object
+
+
+def fuzzy_search_in_text(search_term, max_dist=2):
+    """
+    Perform a fuzzy search on the contents of files and return matches ordered by closeness.
+    """
+    logger.info(
+        f"Starting fuzzy search for term: {search_term} with max_dist: {max_dist}"
+    )
+    logger.info(f"MDROOT: {settings.md_path}")
+
+    matches_with_distances = []
+    pattern = f"({search_term}){{e<={max_dist}}}"
+
+    try:
+        for root, _, files in os.walk(settings.md_path):
+            for file_name in files:
+                if not file_name.endswith(".md"):
+                    continue
+                file_path = os.path.join(root, file_name)
+                relative_path = os.path.relpath(file_path, settings.md_path)
+
+                try:
+                    with open(file_path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                        match = mre.search(pattern, content, mre.BESTMATCH)
+                        if match:
+                            distance = match.fuzzy_counts[0]
+                            snippet_start = max(match.start() - 30, 0)
+                            snippet_end = min(match.end() + 30, len(content))
+                            snippet = content[snippet_start:snippet_end]
+                            matches_with_distances.append(
+                                (
+                                    relative_path,
+                                    snippet,
+                                    distance,
+                                )
+                            )
+                except Exception as e:
+                    logger.error(f"Error reading file {file_path}: {str(e)}")
+
+        sorted_matches = sorted(matches_with_distances, key=lambda x: x[2])
+
+        # Format results using data classes
+        results = [
+            D.FuzzySearchResult(file_path=match[0], snippet=match[1])
+            for match in sorted_matches
+        ]
+
+        logger.info(f"Total matches found: {len(results)}")
+        return D.NoteSearchFull(results=results)
+    except Exception as e:
+        logger.exception(f"Unexpected error in fuzzy search: {str(e)}")
+        return D.NoteSearchFull(results=[])
+
+
+def get_toc(note_path: str) -> D.ToC:
+    if not note_path or not isinstance(note_path, str):
+        raise ValueError("Invalid note path")
+
+    full_note_path = os.path.join(settings.md_path, note_path + ".md")
+    if not os.path.exists(full_note_path):
+        raise FileNotFoundError(f"The file {full_note_path} does not exist.")
+
+    try:
+        with open(full_note_path, "r") as file:
+            content = file.read()
+
+        # Remove front matter
+        content_parts = content.split("---", 2)
+        if len(content_parts) >= 3:
+            content = content_parts[2]
+
+        # Extract headings
+        heading_pattern = re.compile(r"^(#{1,6})\s+(.*?)$", re.MULTILINE)
+        headings = [
+            (len(match.group(1)), match.group(2).strip())
+            for match in heading_pattern.finditer(content)
+        ]
+
+        # Build TOC using ToCItem data class
+        current_levels = {0: D.ToCItem(title="root")}
+
+        for level, title in headings:
+            new_item = D.ToCItem(title=title)
+            parent_level = max(k for k in current_levels.keys() if k < level)
+            current_levels[parent_level].children[title] = new_item
+            current_levels[level] = new_item
+
+            # Clear any deeper levels
+            for lvl in list(current_levels.keys()):
+                if lvl > level:
+                    del current_levels[lvl]
+
+        # Wrap result in ToC and return
+        return D.ToC(headings=current_levels[0].children)
+
+    except Exception as e:
+        raise RuntimeError(f"Error processing file: {e}")
