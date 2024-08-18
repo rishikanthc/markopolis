@@ -14,7 +14,8 @@
     --tag: #fedc69;
     --tag-text: #161616;
     --nav: #893ffb;
-
+    --bar: #161616;
+    --bar-text: #c6c6c6;
     --table-th: #e0e0e0;
     --table-td: #f4f4f4;
 
@@ -144,9 +145,22 @@ a:hover {
     color: var(--text-primary);
     overflow-wrap: break-word;
     box-sizing: border-box;
+
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
 
 /* panel */
+.panel {
+    color: var(--text-primary);
+}
+
 .backlinks {
     display: flex;
     flex-direction: column;
@@ -161,6 +175,7 @@ a:hover {
 .backlinks a {
     text-decoration: none;
     font-size: var(--text-03);
+    color: var(--link-primary);
 }
 
 /* Sidebar */
@@ -192,6 +207,7 @@ a:hover {
     margin: var(--spacing-06) auto;
     font-family: "Megrim", sans-serif;
     font-size: var(--text-08);
+    color: var(--bar-text);
 }
 
 /* Theme Switcher */
@@ -208,7 +224,7 @@ a:hover {
 
 #theme-text {
     font-size: var(--text-02);
-    color: var(--text-color);
+    color: var(--bar-text);
 }
 
 .theme-icon {
@@ -220,12 +236,12 @@ a:hover {
 
 .theme-icon .fa-sun {
     display: none;
-    color: var(--switcher);
+    color: var(--bar-text);
 }
 
 .theme-icon .fa-moon {
     display: inline-block;
-    color: var(--switcher);
+    color: var(--bar-text);
 }
 
 .switcher.dark .fa-sun {
@@ -249,6 +265,8 @@ a:hover {
 /* Menu */
 .menu {
     flex-grow: 1;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .folder {
@@ -681,20 +699,20 @@ img {
     right: 0;
     height: 50px;
     width: 100%;
-    background-color: var(--layer-01);
+    background-color: var(--bar);
     z-index: 1000;
     /* padding: 0 var(--spacing-04); */
     display: flex; /* Ensure flex display */
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
     box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .menu-toggle {
-    background-color: var(--layer-01);
+    background-color: var(--bar);
     border: none;
-    color: var(--text-primary);
+    color: var(--bar-text);
     font-size: var(--text-05);
     padding: var(--spacing-02);
     cursor: pointer;
@@ -703,5 +721,78 @@ img {
 .mobile-title {
     font-family: "Megrim", sans-serif;
     font-size: var(--text-06);
-    color: var(--text-primary);
+    color: var(--bar-text);
+}
+
+@media screen and (min-width: 1500px) {
+    .page_inner {
+        display: flex;
+        justify-content: space-between;
+        height: 100%;
+        /* overflow: hidden; */
+        /* margin-left: 350px; */
+        gap: var(--spacing-08);
+    }
+
+    .panel {
+        height: 100%;
+        /* height: calc(100% - 50px); */
+        position: absolute;
+        /* background: var(--bar); */
+        top: 0px;
+        right: 0px;
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        /* padding: var(--spacing-04); */
+        align-items: left;
+        flex-grow: 1;
+    }
+}
+
+@media screen and (min-width: 1280px) {
+    .main {
+        height: 100svh;
+        margin: 0;
+        padding: 0;
+    }
+
+    .page {
+        margin-top: 0px;
+    }
+    .page_inner {
+        /* display: flex;
+        justify-content: center; */
+        height: 100%;
+        overflow: hidden;
+        margin-left: 350px;
+        /* gap: var(--spacing-08); */
+    }
+    .content {
+        overflow-y: scroll;
+    }
+
+    .mobile-top-bar {
+        display: none;
+    }
+
+    .sidebar {
+        left: 0;
+        width: 300px;
+        background: var(--bar);
+    }
+
+    .title {
+        background-color: #262626;
+        padding: 1em;
+        border-radius: 10px;
+        box-shadow:
+            inset 0 2px 2px #000,
+            0 2px 0 hsla(30, 0%, 32%, 0.55);
+    }
+
+    .mobile-title {
+        display: none;
+    }
 }
