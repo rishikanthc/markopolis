@@ -1,6 +1,8 @@
 import base64
 from loguru import logger
 import sys
+import re
+import sh
 import markdown
 from .md_extensions import (
     CalloutExtension,
@@ -16,6 +18,26 @@ import markopolis.dantic as D
 
 logger.remove()
 logger.add(sys.stdout, level="DEBUG")
+
+
+def extract_title_from_frontmatter(file_path):
+    """
+    Extract the title from the YAML frontmatter of the markdown file.
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+            frontmatter_match = re.match(
+                r"^---\s*\n(.*?\n?)^---\s*\n", content, re.DOTALL | re.MULTILINE
+            )
+            if frontmatter_match:
+                frontmatter = frontmatter_match.group(1)
+                yaml_data = yaml.safe_load(frontmatter)
+                if "title" in yaml_data:
+                    return yaml_data["title"]
+    except Exception as e:
+        logger.debug(f"Failed to extract title from {file_path}: {e}")
+    return None
 
 
 def write_md_files(md_file_dict):
@@ -242,3 +264,66 @@ def list_notes() -> D.FileTree:
     root_folder = build_file_tree(md_root)
 
     return D.FileTree(root=root_folder)
+
+
+def clean_path(path):
+    """
+    Clean up the path by removing ANSI escape sequences and other non-printable characters.
+    """
+    ansi_escape = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
+    return ansi_escape.sub("", path).strip()
+
+
+def find_backlinks(target_file):
+    pth = settings.md_path
+    print(f"Searching for backlinks to: {target_file}")
+    print(f"In vault directory: {pth}")
+
+    # The pattern for backlinks in the markdown format [[<filename>]]
+    target = target_file.split(".")[0]
+    backlink_pattern = rf"\[\[{re.escape(target)}\]\]"
+
+    backlinks_list = []
+
+    try:
+        # Use sh.Command to get the full path of rg
+        rg = sh.Command("rg")
+
+        # Run ripgrep to search for backlinks
+        result = rg("-l", backlink_pattern, pth, _err_to_out=True)
+
+        if result:
+            matches = result.splitlines()
+
+            for match in matches:
+                # Clean the path
+                clean_match = clean_path(match)
+
+                # Extract title from the YAML frontmatter of the matched markdown file
+                title = extract_title_from_frontmatter(clean_match)
+                if title:
+                    backlink = D.Backlink(title=title, path=clean_match.split(".")[0])
+                    backlinks_list.append(backlink)
+                else:
+                    logger.debug(f"No title found in {clean_match}")
+
+        else:
+            logger.debug("No backlinks found.")
+
+    except sh.CommandNotFound:
+        logger.debug(
+            "Error: ripgrep (rg) command not found. Make sure it's installed and in your PATH."
+        )
+    except sh.ErrorReturnCode as e:
+        logger.debug(f"ripgrep command failed with exit code {e.exit_code}")
+        logger.debug("STDOUT:")
+        logger.debug(e.stdout.decode())
+        logger.debug("STDERR:")
+        logger.debug(e.stderr.decode())
+    except Exception as e:
+        logger.debug(f"An unexpected error occurred: {e}")
+        logger.debug(f"Error type: {type(e)}")
+
+    # Create the Backlinks object from the collected backlinks
+    backlinks_object = D.Backlinks(backlinks=backlinks_list)
+    return backlinks_object

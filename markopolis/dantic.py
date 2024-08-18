@@ -36,3 +36,12 @@ class Folder(BaseModel):
 
 class FileTree(BaseModel):
     root: Folder
+
+
+class Backlink(BaseModel):
+    title: str
+    path: str
+
+
+class Backlinks(BaseModel):
+    backlinks: List[Backlink]

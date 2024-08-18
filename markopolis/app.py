@@ -112,11 +112,28 @@ async def get_frontmatter(
         # Create an instance of the Frontmatter dataclass
         frontmatter = D.Frontmatter(**frontmatter_data)
 
-        return JSONResponse(content=frontmatter.model_dump())
+        return JSONResponse(content=frontmatter.model_dump_json())
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/{note_path:path}/backlinks", response_model=D.Backlinks)
+async def get_backlinks(note_path: str):
+    try:
+        # Check if the file exists
+        # if not os.path.isfile(note_path + ".md"):
+        #     raise HTTPException(status_code=404, detail="Note not found")
+
+        # Call find_backlinks to get the backlinks for the note
+        backlinks_object = M.find_backlinks(note_path)
+
+        # Return the backlinks as a JSON response
+        return backlinks_object
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/api/{path:path}", response_model=D.NoteHtml)
