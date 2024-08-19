@@ -20,7 +20,7 @@ I decided to build my own, and thus Markopolis was born.
 - **Simple Deployment:** Extremely easy to deploy, configure, and use.
 - **REST API Interface:** Provides a REST API to interact with different Markdown elements in your notes.
 - **Customizable UI:** Supports "bring your own user interface" by using Markopolis as a backend.
-- **Obsidian Markdown Flavor:** Stays close to the Obsidian Markdown flavor and supports backlinks, todos, and LaTeX equations.
+- **Obsidian Markdown Flavor:** Stays close to the Obsidian Markdown flavor and supports backlinks, todos, callouts, mermaid diagrams and LaTeX equations.
 - **Instant Rendering:** Uses a single command to push Markdown notes to the server and instantly renders them as simple webpages.
 - **Full Text Search:** Implements full text search.
 - **Dark and Light Modes:** Supports both dark and light modes.
@@ -112,6 +112,11 @@ This command will scan all markdown files in your folder and upload it to the se
 If the file already exists on the server, then it checks if there are any changes.
 If there are no changes, the file is skipped. If there are changes then it is overwritten.
 
+## New Sync Feature
+v1.1.0 and up support a new command `mdsync` which syncs your local markdown files with the server.
+This command is useful for keeping your local files in sync with the server. It will upload new files
+and update existing files. It will also delete files that are no longer present in the local directory.
+
 ### Home Page
 The home page content is loaded from a file called `home.md`.
 
@@ -122,7 +127,7 @@ In no particular order, here are some of the features that are planned:
 - [x] Support for Obsidian callouts.
 - [x] Mermaid diagrams.
 - [ ] Editor-agnostic cross-device syncing.
-- [ ] Delete file API interface.
+- [x] Delete file API interface.
 - [ ] Graph view.
 - [ ] Daily notes.
 - [ ] Private pages to hide specific pages under a password.
