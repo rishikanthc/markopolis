@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "markopolis"
-version = "0.3.4"
+version = "1.0.0"
 description = "Self-hostable Obsidian Publish"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
@@ -60,4 +60,4 @@ diagnosticMode = "openFilesOnly"
 consume = "markopolis.scripts.consume:consume"
 markopolis = "markopolis.app:main"
 mtest = "markopolis.scripts.testsh:main"
-md_sync = "markopolis.scripts.md_sync:md_sync"
+mdsync = "markopolis.scripts.md_sync:mdsync"

@@ -1,6 +1,10 @@
 FROM python:3.12-alpine
 
-RUN pip install --no-cache-dir markopolis==0.3.4
+# Install ripgrep
+RUN apk add --no-cache ripgrep
+
+# Install markopolis
+RUN pip install --no-cache-dir markopolis==1.0.0
 
 WORKDIR /app
 
