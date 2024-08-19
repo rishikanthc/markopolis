@@ -1,214 +1,168 @@
 import os
 import yaml
-import re
-import base64
 import requests
+import base64
+import logging
 from tqdm import tqdm
-from loguru import logger
-import sys
-from markopolis.config import settings
 import fire
-from pydantic import BaseModel
+from markopolis.config import settings
 
-# Logger setup
-logger.remove()
-logger.add(sys.stdout, level="DEBUG")
-
-
-class FileItem(BaseModel):
-    title: str
-    link: str
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-class FolderItem(BaseModel):
-    folder: str
-    members: "list[FileItem | FolderItem]"
-
-
-class MarkdownFileList(BaseModel):
-    files: list[FolderItem]
-
-
-def valid_yaml_frontmatter(content, file_path):
-    """Check if content has valid YAML frontmatter and contains 'publish: true'."""
-    if content.strip().startswith("---"):
-        frontmatter_match = re.search(r"^---\s*\n(.*?)\n---\s*\n", content, re.DOTALL)
-        if frontmatter_match:
-            frontmatter = yaml.safe_load(frontmatter_match.group(1))
-            if frontmatter.get("publish") is True:
-                return frontmatter.get(
-                    "title", os.path.basename(file_path).replace(".md", "")
+# Helper function to flatten the file tree from the server into a list of file paths
+def flatten_file_tree(folder, path=""):
+    files = []
+    for member in folder["members"]:
+        if "folder_name" in member:
+            # It's a folder, recursively flatten it
+            files.extend(
+                flatten_file_tree(
+                    member, path=os.path.join(path, member["folder_name"])
                 )
-    return None
+            )
+        else:
+            # It's a file, add to the list
+            files.append(os.path.join(path, member["filename"]))
+    return files
 
 
-def scan_files(path):
-    """Scan for markdown files with valid frontmatter and publish: true."""
-    matching_files = {}
-    for root, _, files in os.walk(path):
-        for file in files:
-            if file.endswith(".md"):
-                file_path = os.path.join(root, file)
-                with open(file_path, "r") as f:
-                    content = f.read()
-                    title = valid_yaml_frontmatter(content, file_path)
-                    if title:
-                        # Use file path as the key to ensure uniqueness
-                        matching_files[file_path] = file_path
-    return matching_files
-
-
-def scan_images(path):
-    """Scan for images with jpg, jpeg, png, webp, svg extensions."""
-    image_files = []
-    for root, _, files in os.walk(path):
-        for file in files:
-            if file.lower().endswith((".jpg", ".jpeg", ".png", ".webp", ".svg")):
-                image_files.append(os.path.join(root, file))
-    return image_files
-
-
-def send_file(file_path, api_url, api_key):
-    """Send the markdown file to the API endpoint."""
-    with open(file_path, "r") as f:
-        content = f.read()
-
-    # Use the filename (without .md extension) instead of the frontmatter title for the upload
-    title = os.path.basename(file_path).replace(".md", "")
-
-    # Construct the full API URL
-    url = f"{api_url}/notes/write"
-
-    # Prepare the payload and headers
-    payload = {
-        "title": title,  # Filename is used as the title here
-        "path": os.path.dirname(os.path.relpath(file_path)),
-        "content": content,
-    }
-
-    headers = {
-        "x-api-key": api_key  # Correct the header key
-    }
-
-    # Send the PUT request
-    response = requests.put(url, json=payload, headers=headers)
-    return response.status_code, response.text
-
-
-def send_image(image_path, api_url, api_key):
-    """Send the image file to the API endpoint."""
-    with open(image_path, "rb") as image_file:
-        encoded_img = base64.b64encode(image_file.read()).decode("utf-8")
-
-    # Construct the full API URL
-    url = f"{api_url}/notes/images/upload"
-
-    # Prepare the payload and headers
-    payload = {
-        "filename": os.path.basename(image_path),
-        "path": os.path.dirname(os.path.relpath(image_path)),
-        "img": encoded_img,
-    }
-
-    headers = {"x-api-key": api_key}
-
-    # Send the PUT request for the image
-    response = requests.put(url, json=payload, headers=headers)
-    return response.status_code, response.text
-
-
-def fetch_server_files(api_url, api_key):
-    """Fetch the list of markdown files on the server."""
-    url = f"{api_url}/notes/ls"
-    headers = {"x-api-key": api_key}
-    response = requests.get(url, headers=headers)
-
-    if response.status_code == 200:
-        return MarkdownFileList(**response.json())
-    else:
-        logger.error(f"Failed to fetch server files: {response.text}")
-        return None
-
-
-def delete_file_on_server(title, api_url, api_key):
-    """Delete the file on the server based on the title."""
-    formatted_title = title.replace(" ", "-")
-    url = f"{api_url}/notes/{formatted_title}/delete"
-    headers = {"x-api-key": api_key}
-    response = requests.delete(url, headers=headers)
-    return response.status_code, response.text
-
-
-def md_sync(path="."):
+def mdsync(path="."):
     api_url = settings.domain
     api_key = settings.api_key
 
-    # Step 1: Scan for local markdown files
-    logger.debug("Scanning for markdown files...")
-    local_files = scan_files(path)
+    # Supported image formats
+    image_extensions = {".png", ".jpg", ".jpeg", ".webp"}
 
-    # Step 2: Fetch server markdown files
-    logger.debug("Fetching markdown files from the server...")
-    server_files_data = fetch_server_files(api_url, api_key)
-    if not server_files_data:
-        logger.error("Failed to retrieve server files, aborting sync.")
-        return
+    # Initialize lists to collect markdown and image file paths
+    md_files = []
+    image_files = []
 
-    # Flatten the server file structure into a simple list of titles
-    def flatten_files(folders):
-        file_titles = []
-        for item in folders:
-            if isinstance(item, FolderItem):
-                file_titles.extend(flatten_files(item.members))
-            elif isinstance(item, FileItem):
-                file_titles.append(item.title)
-        return file_titles
+    # Walk through the directory to find all markdown and image files
+    for root, _, files in os.walk(path):
+        for file in files:
+            # Collect markdown files
+            if file.endswith(".md"):
+                md_files.append(os.path.join(root, file))
+            # Collect image files based on their extensions
+            elif any(file.lower().endswith(ext) for ext in image_extensions):
+                image_files.append(os.path.join(root, file))
 
-    server_files = flatten_files(server_files_data.files)
-
-    # Step 3: Delete server files that don't exist locally
-    logger.debug("Checking for files to delete on the server...")
-    for server_title in server_files:
-        if server_title not in local_files:
-            status_code, response_text = delete_file_on_server(
-                server_title, api_url, api_key
-            )
-            if status_code == 200:
-                logger.debug(f"Successfully deleted {server_title} from server")
-            else:
-                logger.error(f"Failed to delete {server_title}: {response_text}")
-
-    # Step 4: Upload new/modified markdown files
-    logger.debug("Uploading markdown files...")
+    # Processing markdown files
     with tqdm(
-        total=len(local_files), desc="Uploading markdown files", unit="file"
-    ) as pbar:
-        for file_path in local_files.values():
-            status_code, response_text = send_file(file_path, api_url, api_key)
-            pbar.update(1)
-            if status_code != 200:
-                logger.error(f"Failed to upload {file_path}: {response_text}")
-            else:
-                logger.debug(f"Successfully uploaded {file_path}")
+        total=len(md_files), desc="Processing markdown files", unit="file"
+    ) as pbar_md:
+        for md_file in md_files:
+            try:
+                # Read the markdown file content
+                with open(md_file, "r") as f:
+                    content = f.read()
 
-    logger.info(f"Completed uploading {len(local_files)} markdown files")
+                # Split the content by lines and check for frontmatter
+                content_lines = content.splitlines()
 
-    # Step 5: Scan for images
-    logger.debug("Scanning for images...")
-    image_files = scan_images(path)
+                # Check if the file has valid YAML frontmatter
+                if content_lines[0] == "---":
+                    end_of_yaml = content_lines[1:].index("---") + 1
+                    yaml_frontmatter = "\n".join(content_lines[1:end_of_yaml])
+                    parsed_yaml = yaml.safe_load(yaml_frontmatter)
 
-    # Step 6: Upload images
-    with tqdm(total=len(image_files), desc="Uploading images", unit="image") as pbar:
-        for image_path in image_files:
-            status_code, response_text = send_image(image_path, api_url, api_key)
-            pbar.update(1)
-            if status_code != 200:
-                logger.error(f"Failed to upload {image_path}: {response_text}")
-            else:
-                logger.debug(f"Successfully uploaded {image_path}")
+                    # Check if 'publish' is set to true
+                    if parsed_yaml.get("publish"):
+                        # Prepare the payload for the API request
+                        file_path_relative = os.path.relpath(md_file, start=path)
+                        payload = {
+                            "file_path": file_path_relative,
+                            "file_content": content,
+                        }
 
-    logger.info(f"Completed uploading {len(image_files)} images")
+                        # Send the PUT request to the markdown API endpoint
+                        response = requests.put(
+                            f"{api_url}/api/upload/md",
+                            json=payload,
+                            headers={"x-api-key": api_key},
+                        )
+
+                        # Raise an error if the response was unsuccessful
+                        response.raise_for_status()
+
+            except Exception as e:
+                # Handle any errors (e.g., invalid frontmatter, API request failure)
+                print(f"Error processing file {md_file}: {e}")
+
+            # Update the progress bar
+            pbar_md.update(1)
+
+    # Processing image files
+    with tqdm(
+        total=len(image_files), desc="Processing image files", unit="file"
+    ) as pbar_img:
+        for img_file in image_files:
+            try:
+                # Read the image file and encode it as a base64 string
+                with open(img_file, "rb") as image_file:
+                    encoded_image = base64.b64encode(image_file.read()).decode("utf-8")
+
+                # Prepare the payload for the API request
+                file_path_relative = os.path.relpath(img_file, start=path)
+                payload = {
+                    "file_path": file_path_relative,
+                    "file_content": encoded_image,
+                }
+
+                # Send the PUT request to the image API endpoint
+                response = requests.put(
+                    f"{api_url}/api/upload/img",
+                    json=payload,
+                    headers={"x-api-key": api_key},
+                )
+
+                # Raise an error if the response was unsuccessful
+                response.raise_for_status()
+
+            except Exception as e:
+                # Handle any errors (e.g., encoding or API request failure)
+                print(f"Error processing image file {img_file}: {e}")
+
+            # Update the progress bar
+            pbar_img.update(1)
+
+    # Sync: delete files on the server that are not present locally
+    try:
+        # Get the list of files from the server
+        response = requests.get(
+            f"{api_url}/api/notes/ls", headers={"x-api-key": api_key}
+        )
+        response.raise_for_status()
+        server_file_tree = response.json()
+
+        # Flatten the file tree from the server into a list of file paths
+        server_files = flatten_file_tree(server_file_tree["root"])
+        server_files = [f + ".md" for f in server_files]
+
+        # Flatten the local files
+        local_files = [os.path.relpath(f, start=path) for f in md_files + image_files]
+
+        # Identify files that are on the server but not present locally
+        files_to_delete = set(server_files) - set(local_files)
+
+        # Delete the files that are no longer present locally
+        for file in tqdm(files_to_delete, desc="Deleting server files", unit="file"):
+            try:
+                # Send the DELETE request to the API
+                response = requests.delete(
+                    f"{api_url}/api/{file.split('.')[0]}/delete",
+                    headers={"x-api-key": api_key},
+                )
+                response.raise_for_status()
+            except Exception as e:
+                print(f"Error deleting server file {file}: {e}")
+
+    except Exception as e:
+        print(f"Error fetching server file list: {e}")
 
 
 if __name__ == "__main__":
-    fire.Fire(md_sync)
+    fire.Fire(mdsync)

@@ -224,6 +224,18 @@ async def load_page(request: Request, path: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.delete("/api/{note_path:path}/delete", response_model=D.Status)
+async def delete_note(note_path: str, api_key: str = Depends(verify_api_key)):
+    # Verify API key using the Depends mechanism
+    result = M.delete_file(note_path)
+
+    # Check the deletion result
+    if result.status == 0:
+        return result
+    else:
+        raise HTTPException(status_code=404, detail="Note not found or deletion failed")
+
+
 class MarkopolisServer:
     @staticmethod
     def run(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):

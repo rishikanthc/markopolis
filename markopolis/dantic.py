@@ -3,6 +3,10 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 
 
+class Status(BaseModel):
+    status: int
+
+
 class MDFile(BaseModel):
     file_path: str
     file_content: str

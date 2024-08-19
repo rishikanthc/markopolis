@@ -451,3 +451,24 @@ def get_toc(note_path: str) -> D.ToC:
 
     except Exception as e:
         raise RuntimeError(f"Error processing file: {e}")
+
+
+def delete_file(note_path: str) -> D.Status:
+    # Define the root directory where markdown files are stored
+    root_dir = Path(settings.md_path)  # Replace with your actual root directory
+    note_path = note_path + ".md"  # Add the file extension
+    # Resolve the full path to the note
+    full_path = root_dir / note_path
+
+    # Check if the file exists
+    if full_path.exists() and full_path.is_file():
+        try:
+            # Delete the file
+            os.remove(full_path)
+            return D.Status(status=0)  # Return status 0 for success
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+            return D.Status(status=1)  # Return status 1 for failure
+    else:
+        # File not found
+        return D.Status(status=1)
