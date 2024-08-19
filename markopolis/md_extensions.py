@@ -7,6 +7,27 @@ from markdown.extensions import Extension
 import re
 
 
+class ImageExtension(markdown.extensions.Extension):
+    def extendMarkdown(self, md):
+        # Register the preprocessor
+        md.preprocessors.register(ImagePreprocessor(md), "image_preprocessor", 25)
+
+
+class ImagePreprocessor(Preprocessor):
+    # Pattern for image extensions (webp, jpg, jpeg, png, svg)
+    IMAGE_PATTERN = re.compile(
+        r"!\[\[(.*?\.(?:webp|jpg|jpeg|png|svg))\]\]"
+    )  # Custom ![[image.ext]]
+
+    def run(self, lines):
+        new_lines = []
+        for line in lines:
+            # Substitute custom image syntax ![[image.ext]] with standard Markdown image syntax ![](image.ext)
+            new_line = re.sub(self.IMAGE_PATTERN, r"![](\1)", line)
+            new_lines.append(new_line)
+        return new_lines
+
+
 # Custom inline pattern for obsidian style images
 class ObsidianImageInlineProcessor(InlineProcessor):
     def handleMatch(self, m, data):

@@ -6,6 +6,7 @@ import regex as mre
 import sh
 import markdown
 from .md_extensions import (
+    ImageExtension,
     CalloutExtension,
     MermaidExtension,
     StrikethroughExtension,
@@ -210,6 +211,7 @@ def get_note_html(note_path):
         extensions=[
             "fenced_code",
             "codehilite",
+            ImageExtension(),
             "mdx_wikilink_plus",
             # WikiLinkExtension(base_url="/", end_url=""),
             "markdown_checklist.extension",

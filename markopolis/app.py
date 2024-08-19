@@ -3,7 +3,7 @@ import fire
 from fastapi import FastAPI, HTTPException, Depends, Header, Path, Request, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import markopolis.dantic as D
 import markopolis.md as M
@@ -189,6 +189,17 @@ async def get_note_html(
 
 @app.get("/{path:path}", response_class=HTMLResponse)
 async def load_page(request: Request, path: str):
+    _cond = (
+        path.endswith(".png")
+        or path.endswith(".jpg")
+        or path.endswith(".jpeg")
+        or path.endswith(".gif")
+        or path.endswith(".svg")
+        or path.endswith(".webp")
+    )
+    if _cond:
+        img_pth = os.path.join(settings.md_path, path)
+        return FileResponse(img_pth)
     try:
         frontmatter = M.get_frontmatter(path)
         html_content = M.get_note_html(path)
