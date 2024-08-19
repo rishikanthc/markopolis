@@ -189,6 +189,8 @@ async def get_note_html(
 
 @app.get("/{path:path}", response_class=HTMLResponse)
 async def load_page(request: Request, path: str):
+    if path == "":
+        path = "home"
     _cond = (
         path.endswith(".png")
         or path.endswith(".jpg")
