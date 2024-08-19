@@ -4,7 +4,7 @@ FROM python:3.12-alpine
 RUN apk add --no-cache ripgrep
 
 # Install markopolis
-RUN pip install --no-cache-dir markopolis==1.0.0
+RUN pip install --no-cache-dir markopolis==1.1.0
 
 WORKDIR /app
 

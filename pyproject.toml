@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "markopolis"
-version = "1.0.0"
+version = "1.1.0"
 description = "Self-hostable Obsidian Publish"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
