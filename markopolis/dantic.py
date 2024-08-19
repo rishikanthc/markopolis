@@ -26,6 +26,7 @@ class NoteHtml(BaseModel):
 
 class File(BaseModel):
     filename: str
+    title: str
     link: str
 
 

@@ -107,8 +107,7 @@
                         member in folder.members %} {% if member.filename %}
                         <div class="file">
                             <a href="{{ member.link }}">
-                                <i class="fas fa-file"></i> {{ member.filename
-                                }}
+                                <i class="fas fa-file"></i> {{ member.title }}
                             </a>
                         </div>
                         {% elif member.folder_name %}
@@ -135,8 +134,7 @@
                         member.filename %}
                         <div class="file">
                             <a href="{{ member.link }}">
-                                <i class="fas fa-file"></i> {{ member.filename
-                                }}
+                                <i class="fas fa-file"></i> {{ member.title }}
                             </a>
                         </div>
                         {% elif member.folder_name %}

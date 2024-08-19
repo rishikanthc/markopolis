@@ -243,12 +243,31 @@ def list_notes() -> D.FileTree:
         else:
             updated_path = f"{current_path}/{folder_name}".lstrip("/")
 
-        # List files and sort them lexicographically
-        files = sorted(root_path.glob("*.md"), key=lambda f: f.name)
+        # List files, extract titles from frontmatter, and sort them by title lexicographically
+        files = list(root_path.glob("*.md"))
+        file_info = []
+
         for file in files:
+            ftitle = os.path.relpath(file, md_root)
+            fpath = os.path.join(md_root, ftitle)
+
+            # Extract title from the frontmatter
+            _title = extract_title_from_frontmatter(fpath)
+            if _title is None:
+                _title = ftitle.split(".")[0]
+
+            file_info.append({"file": file, "title": _title})
+
+        # Sort the files by title
+        sorted_files = sorted(file_info, key=lambda x: x["title"])
+
+        for info in sorted_files:
+            file = info["file"]
+            _title = info["title"]
             file_obj = D.File(
                 filename=file.name.split(".")[0],
-                link=f"/{updated_path}/{file.stem}".lstrip("/"),
+                link=f"{updated_path}/{file.stem}",
+                title=_title,
             )
             members.append(file_obj)
 
