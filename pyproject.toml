@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "markopolis"
-version = "1.1.1"
+version = "1.1.3"
 description = "Self-hostable Obsidian Publish"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 pyyaml = "^6.0.1"
 markdown = "^3.6"
 loguru = "^0.7.2"

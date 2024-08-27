@@ -181,7 +181,8 @@ def get_note_html(note_path):
 
     md_configs = {
         "mdx_wikilink_plus": {
-            "base_url": f"{settings.domain}",
+            "base_url": settings.frontend_url,
+            "url_whitespace": "%20",
         },
     }
 
@@ -239,7 +240,8 @@ def list_notes() -> D.FileTree:
         folder_name = root_path.name
 
         if current_path == "":
-            updated_path = f"{settings.domain}"
+            # updated_path = f"{settings.domain}"
+            updated_path = f"{settings.frontend_url}"
         else:
             updated_path = f"{current_path}/{folder_name}".lstrip("/")
 
@@ -271,19 +273,26 @@ def list_notes() -> D.FileTree:
             )
             members.append(file_obj)
 
-        # Recursively add subfolders and sort them lexicographically
+        # Recursively add subfolders that contain markdown files and sort them lexicographically
         subfolders = sorted(
             [subfolder for subfolder in root_path.iterdir() if subfolder.is_dir()],
             key=lambda f: f.name,
         )
         for subfolder in subfolders:
             subfolder_obj = build_file_tree(subfolder, updated_path)
-            members.append(subfolder_obj)
+            # Only include the folder if it contains files or subfolders with markdown files
+            if subfolder_obj.members:
+                members.append(subfolder_obj)
 
+        # Return the folder with its members, even if empty, since we can't return None
         return D.Folder(folder_name=folder_name, members=members)
 
     # Start the recursive process from the root folder
     root_folder = build_file_tree(md_root)
+
+    # Handle the case where the root folder might be empty
+    if not root_folder.members:
+        root_folder.members = []
 
     return D.FileTree(root=root_folder)
 
@@ -397,7 +406,7 @@ def fuzzy_search_in_text(search_term, max_dist=2):
 
         # Format results using data classes
         results = [
-            D.FuzzySearchResult(file_path=match[0], snippet=match[1])
+            D.FuzzySearchResult(file_path=match[0].split(".")[0], snippet=match[1])
             for match in sorted_matches
         ]
 

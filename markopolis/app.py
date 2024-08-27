@@ -20,7 +20,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[f"{settings.frontend_url}"],
+    allow_origins=[
+        f"{settings.frontend_url}",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["GET", "PUT", "OPTIONS"],
     allow_headers=["*"],
@@ -120,6 +124,8 @@ async def get_frontmatter(
     path: str = Path(..., description="The path to the note, including nested folders"),
     api_key: str = Depends(verify_api_key),
 ):
+    if path == "":
+        path = "home"
     try:
         # Fetch the frontmatter
         frontmatter_data = M.get_frontmatter(path)
@@ -127,7 +133,8 @@ async def get_frontmatter(
         # Create an instance of the Frontmatter dataclass
         frontmatter = D.Frontmatter(**frontmatter_data)
 
-        return JSONResponse(content=frontmatter.model_dump_json())
+        return frontmatter
+
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
@@ -175,8 +182,21 @@ async def get_toc_endpoint(
 @app.get("/api/{path:path}", response_model=D.NoteHtml)
 async def get_note_html(
     path: str = Path(..., description="The path to the note, including nested folders"),
-    api_key: str = Depends(verify_api_key),
+    # api_key: str = Depends(verify_api_key),
 ):
+    if path == "":
+        path = "home"
+    _cond = (
+        path.endswith(".png")
+        or path.endswith(".jpg")
+        or path.endswith(".jpeg")
+        or path.endswith(".gif")
+        or path.endswith(".svg")
+        or path.endswith(".webp")
+    )
+    if _cond:
+        img_pth = os.path.join(settings.md_path, path)
+        return FileResponse(img_pth)
     try:
         # Fetch the HTML content
         html_content = M.get_note_html(path)
@@ -210,7 +230,7 @@ async def load_page(request: Request, path: str):
         toc = M.get_toc(path).model_dump()
 
         return templates.TemplateResponse(
-            "page.html",
+            "page2.html",
             {
                 "request": request,
                 "frontmatter": frontmatter,
