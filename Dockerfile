@@ -19,7 +19,7 @@ RUN python -m venv /opt/venv
 # Activate the virtual environment, upgrade pip within it, and install markopolis
 RUN /bin/sh -c ". /opt/venv/bin/activate && \
     pip install --upgrade pip && \
-    pip install --no-cache-dir markopolis==1.1.3 && \
+    pip install --no-cache-dir markopolis==1.1.4 && \
     pip show markopolis"
 
 # Set up frontend

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "markopolis"
-version = "1.1.3"
+version = "2.0.0"
 description = "Self-hostable Obsidian Publish"
 authors = ["Rishikanth Chandrasekaran <r3chandr@ucsd.edu>"]
 readme = "README.md"
@@ -19,7 +19,6 @@ dynaconf = "^3.2.6"
 python-markdown-math = "^0.8"
 requests = "^2.32.3"
 tqdm = "^4.66.5"
-jinja2 = "^3.1.4"
 fastapi = { extras = ["standard"], version = "^0.112.0" }
 markdown-checklist = "^0.4.4"
 mdx-wikilink-plus = "^1.4.1"

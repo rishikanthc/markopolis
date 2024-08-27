@@ -1,16 +1,12 @@
 import uvicorn
 import fire
-from fastapi import FastAPI, HTTPException, Depends, Header, Path, Request, Query
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi import FastAPI, HTTPException, Depends, Header, Path, Query
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import markopolis.dantic as D
 import markopolis.md as M
 from markopolis import settings
 import os
-import re
-from jinja2 import Environment, FileSystemLoader
 from loguru import logger
 import sys
 
@@ -29,38 +25,6 @@ app.add_middleware(
     allow_methods=["GET", "PUT", "OPTIONS"],
     allow_headers=["*"],
 )
-
-package_dir = os.path.dirname(__file__)
-static_dir = os.path.join(package_dir, "static")
-fonts_dir = os.path.join(static_dir, "fonts/IBM_Plex")
-
-
-app.mount("/static", StaticFiles(directory=static_dir), name="static")
-app.mount("/fonts", StaticFiles(directory=fonts_dir), name="fonts")
-
-templates_dir = os.path.join(os.path.dirname(__file__), "templates")
-jinja_env = Environment(loader=FileSystemLoader(templates_dir))
-
-
-def slugify(value: str) -> str:
-    value = re.sub(r"[^\w\s-]", "", value.lower())
-    return re.sub(r"[-\s]+", "-", value).strip()
-
-
-def add_heading_ids(content: str) -> str:
-    def replace(match):
-        tag, title = match.groups()
-        return f'<{tag} id="{slugify(title)}">{title}</{tag}>'
-
-    pattern = r"<(h[1-6])>(.*?)</\1>"
-    return re.sub(pattern, replace, content)
-
-
-jinja_env.filters["slugify"] = slugify
-jinja_env.filters["add_heading_ids"] = add_heading_ids
-
-templates = Jinja2Templates(directory="templates")
-templates.env = jinja_env
 
 
 # Authentication
@@ -204,45 +168,6 @@ async def get_note_html(
         # Return as a NoteHtml response model
         return D.NoteHtml(html_content=html_content)
     except FileNotFoundError as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/{path:path}", response_class=HTMLResponse)
-async def load_page(request: Request, path: str):
-    if path == "":
-        path = "home"
-    _cond = (
-        path.endswith(".png")
-        or path.endswith(".jpg")
-        or path.endswith(".jpeg")
-        or path.endswith(".gif")
-        or path.endswith(".svg")
-        or path.endswith(".webp")
-    )
-    if _cond:
-        img_pth = os.path.join(settings.md_path, path)
-        return FileResponse(img_pth)
-    try:
-        frontmatter = M.get_frontmatter(path)
-        html_content = M.get_note_html(path)
-        notes_list = M.list_notes().model_dump()
-        backlinks = M.find_backlinks(path).model_dump()
-        toc = M.get_toc(path).model_dump()
-
-        return templates.TemplateResponse(
-            "page2.html",
-            {
-                "request": request,
-                "frontmatter": frontmatter,
-                "content": html_content,
-                "site_title": settings.title,
-                "notes_list": notes_list,
-                "backlinks": backlinks,
-                "base_url": settings.domain,
-                "toc": toc,
-            },
-        )
-    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
