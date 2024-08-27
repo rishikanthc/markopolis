@@ -311,8 +311,9 @@ def find_backlinks(target_file):
     print(f"In vault directory: {pth}")
 
     # The pattern for backlinks in the markdown format [[<filename>]]
-    target = target_file.split(".")[0]
-    backlink_pattern = rf"\[\[{re.escape(target)}\]\]"
+    # Escape special characters like spaces in the filename
+    target = re.escape(target_file.split(".")[0])
+    backlink_pattern = rf"\[\[{target}\]\]"
 
     backlinks_list = []
 
