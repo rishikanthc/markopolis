@@ -26,7 +26,7 @@ app.add_middleware(
         "http://localhost:3000",
     ],
     allow_credentials=True,
-    allow_methods=["GET", "PUT", "OPTIONS"],
+    allow_methods=["GET", "PUT", "OPTIONS", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -191,6 +191,7 @@ class MarkopolisServer:
     @staticmethod
     def run(host: str = "0.0.0.0", port: int = 8000, reload: bool = True):
         """Run the FastAPI server using Uvicorn."""
+        print(app.openapi())
         uvicorn.run("markopolis.app:app", host=host, port=port, reload=reload)
 
 

@@ -191,7 +191,7 @@ def get_note_html(note_path):
     # Unspluggify the note path to convert hyphens back to spaces
     # unsluggified_path = unsluggify(note_path)
 
-    mdx_config = {"base_url": settings.domain + "/api/", "url_whitespace": "%20"}
+    mdx_config = {"url_whitespace": "%20"}
     # Get the root directory from settings
     md_root = settings.md_path
 
