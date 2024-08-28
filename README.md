@@ -237,6 +237,10 @@ This command will upload all markdown and image files to the server.
 This command will **NOT DELETE** files on the server.
 
 > [!info]
+> Both commands will only upload files that `publish: true` in the frontmatter.
+> Files that don't have this set will not be uploaded.
+
+> [!info]
 > Note that both commands replicate the entire file and directory structure.
 > Both commands need to be run from the *root* location for your markdown
 > files.
