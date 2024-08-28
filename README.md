@@ -23,8 +23,8 @@ open-source and free under the MIT License. Check out the [GitHub repo](https://
 and lots more to come. Checkout the [roadmap](https://markopolis.app/roadmap) page for planned features.
 
 ## Demo
-This website is hosted using Markopolis and showcases a small collection of Markdown notes to highlight the essential features.
-I have tried to incorporate content here to showcase different features. Take a look at the [[Markdown Syntax]] page for
+The documentation [website](https://markopolis.app) is hosted using Markopolis and showcases a small collection of Markdown notes to highlight the essential features.
+I have tried to incorporate content here to showcase different features. Take a look at the [https://markopolis.app/](https://markopolis.app/Markdown%20Syntax) page for
 checking out how different markdown syntax is rendered.
 
 Thank you for considering Markopolis for your Markdown note-sharing needs! If you like
