@@ -1,62 +1,83 @@
-# Markopolis
+## Introduction
 Hi,
-My name is [Rishikanth](https://rishikanth.me). I built Markopolis, a web app and API server
-designed to serve Markdown files. It allows you to share Markdown notes as websites and interact with and manipulate
-your Markdown files using an API. Simply install Markopolis, point it to a directory holding
-all your Markdown files, and the library takes care of everything else. Markopolis is
-open-source and free and is released under the MIT-License. Check out the [github repository](https://github.com/rishikanthc/markopolis).
+I’m [Rishikanth](https://rishikanth.me), and I’m excited to introduce you to Markopolis! It’s a web app and API server I
+built that lets you easily share your Markdown notes as websites while giving you full control to
+interact with and manage your Markdown files via a powerful API. Just point Markopolis to a folder
+with your Markdown files, and it’ll handle the rest. The idea is to help you create your own tools
+and features around your notes without being tied down by proprietary systems. It’s completely
+open-source and free under the MIT License. Check out the [GitHub repo](https://github.com/rishikanthc/markopolis) and start exploring!
 
-**TLDR:** Markopolis is a self-hostable alternative to Obsidian Publish
-
-## Why I Built This?
-I built Markopolis because I wanted a web server that primarily uses plain text Markdown
-files for note-taking. As much as I love the customizability that Obsidian offers, I found
-it too distracting and easy to get lost in optimizing and customizing. I wanted a self-hosted
-solution for sharing and viewing my Markdown notes online, similar to Obsidian Publish, but
-without getting locked into the Obsidian ecosystem. After failing to find an existing solution,
-I decided to build my own, and thus Markopolis was born.
 
 ## Features
 - **Simple Deployment:** Extremely easy to deploy, configure, and use.
 - **REST API Interface:** Provides a REST API to interact with different Markdown elements in your notes.
 - **Customizable UI:** Supports "bring your own user interface" by using Markopolis as a backend.
-- **Obsidian Markdown Flavor:** Stays close to the Obsidian Markdown flavor and supports backlinks, todos, callouts, mermaid diagrams and LaTeX equations.
+- **Obsidian Markdown Flavor:** Stays close to the Obsidian Markdown flavor and supports backlinks, todos, LaTeX equations, code, tables, callouts etc.
 - **Instant Rendering:** Uses a single command to push Markdown notes to the server and instantly renders them as simple webpages.
 - **Full Text Search:** Implements full text search.
 - **Dark and Light Modes:** Supports both dark and light modes.
-- **Code Formatting and Todos:** Supports code formatting and todos.
 - **Low Maintenance:** Requires very little to no maintenance.
 - **Docker Support:** Comes as a deployable Docker image.
-- **Local Installation:** Can also be installed locally.
 - **API Documentation:** Inbuilt API documentation generated using FastAPI.
 
-## Demo
-Check out [docs website](https://markopolis.app) for a live demo, which showcases a small collection of Markdown notes to highlight the essential features.
-Check out the Installation section for instructions on how to deploy and configure Markopolis.
+and lots more to come. Checkout the [roadmap](https://markopolis.app/roadmap) page for planned features.
 
+## Demo
+This website is hosted using Markopolis and showcases a small collection of Markdown notes to highlight the essential features.
+I have tried to incorporate content here to showcase different features. Take a look at the [[Markdown Syntax]] page for
+checking out how different markdown syntax is rendered.
+
+Thank you for considering Markopolis for your Markdown note-sharing needs! If you like
+the project considering starring the repository.
+
+## Versioning
+
+I try to follow semantic versioning as much as possible. However, I have still not
+streamlined the process yet, so please bear with me if there are any mishaps. v2.0.0 achieves
+code separation between backend and frontend because of which I had to fast forward the
+docker versioning to match the python package. Going forward I'll try to avoid such mishaps
+and I'll be maintaining a detailed changelog at [changelog](https://markopolis.app/changelog).
+
+This is my first open-source project and I'm excited to scale it well. I started building this
+mostly out of my personal need, but if there's public interest I'm more than happy to
+accept feature requests and contributions. Any and all feedback is welcome. This project
+will always be open-source and maintained as I rely on it for my own notes system.
+
+If you like the project please don't forget to star the [github repo](https://github.com/rishikanthc/markopolis.git).
 
 ## Installation
-Installation has two parts. Server deployment and local setup. The server deployment
-is for deploying and setting up the API server and front-end. The local setup is
-for pushing markdown files to the server for publishing.
+Installing Markopolis involves two steps.
 
-### Deployment using Docker
+- **STEP 1:** Deploying the Markopolis server
+- **STEP 2:** Installing the Markopolis package on your local machine
 
-Use the provided docker-compose:
-Fill up the environment values. Make sure to generate and add a secure `API_KEY`.
-Allocate persistent storage for the Markdown files.
+## STEP 1: Deploying Markopolis server
 
-#### Docker Compose
+The easiest way to deploy the server is to use the provided docker image.
+The docker image packages both the backend and frontend together and sets up a
+reverse proxy to route requests correctly to the backend and frontend.
+
+You can use the docker-compose provided below. Make sure to change the
+environment variables to match your settings.
+
+> [!warning]
+> Make sure to use a secure API key. You can use `openssl rand -hex 32` to
+> generate a random alphanumeric string to use as your API key.
+
+### Docker Compose
+
+
 ```
 version: '3.8'
 
 services:
   markopolis:
-    image: ghcr.io/rishikanthc/markopolis:1.1.1
+    image: ghcr.io/rishikanthc/markopolis:2.0.0
     ports:
-      - "8080:8080"
+      - "8080:80"
     environment:
       - MARKOPOLIS_DOMAIN="https://your-domain.com"
+      - MARKOPOLIS_FRONTEND_URL = https://your-domain.com"
       - MARKOPOLIS_TITLE="Awesome Notes"
       - MARKOPOLIS_MD_PATH=/app/markdown
       - MARKOPOLIS_API_KEY=<really long random alpha-numeric string>
@@ -69,92 +90,170 @@ volumes:
     driver: local
 ```
 
-Deploy using Docker:
 
-```sh
-docker-compose up -d
+Parameter | Description
+-- | --
+MARKOPOLIS_DOMAIN | This is the domain at which both your frontend and backend is available by default. Make sure to include the protocol along with your domain
+MARKOPOLIS_FRONTEND_URL | This parameter is available for configuring custom frontend implementations. If you are using the default front-end that ships with Markopolis, this should be **same as MARKOPOLIS_DOMAIN**.
+MARKOPOLIS_TITLE | This parameter controls the site title displayed on the top-left in the header
+MARKOPOLIS_MD_PATH | This is the path on the server at which your markdown files are stored. Ideally this should point to a directory in your persistent volume.
+MARKOPOLIS_API_KEY | For security, most of the API endpoints are protected by an API key. Make sure to use a secure API key and don't share it publicly.
+
+> [!warning]
+> the domains should not contain a leading slash at the end.
+> For eg. https://example.com will work
+> https://example.com/ will not work
+
+## STEP 2: Local installation
+
+Markopolis provides an easy way to sync or push your markdown files from your computer to the server.
+You do not need to use Docker to mount your markdown files. Follow the instructions below to set this
+up.
+
+
+I highly recommend configuring a virtual environment for python to keep your environment clean and
+and prevent any dependency issues. Below I detail the steps to do this using Conda or pip. If you are familar
+with this feel free to skip to the package installation section.
+
+> [!info]
+> You need to have python version >= 3.11
+
+### Setting up a virtual environment
+
+You can use either `pip` or `conda` to do this. If you are using `pip` simply run
+```bash
+python3.11 -m venv <name>
 ```
 
+Replace `<name>` with your desired virtual environment name. You can then activate the virtual environment
+using:
+```bash
+source <name>
+```
 
-### Local Installation
-Requirements: Python 3.12
+For conda, you can use
+```bash
+conda create -n <name> python==3.11
+```
 
-Install:
-```sh
+and activate it with
+```bash
+conda activate <name>
+```
+
+### Package installation
+
+Simply install the markopolis python package using your preferred package manager.
+
+**pip:**
+```bash
 pip install markopolis
 ```
 
-#### Configuration:
-Create a config file as a YAML file in any location.
-Set the `MARKOPOLIS_CONFIG_PATH` environment variable to point to the location of the config file.
-The config file should specify the domain of the deployment including the protocol and
-the api key. The api key should be the same as what you used for the deployment:
+### Configuration
+
+Create a yaml config file anywhere in your system to set the below values. I recommend
+storing it in `.config/markopolis/settings.yaml`.
+
+> [!info]
+> You can name the file anything and you can store it anywhere.
+> You will need to set the config path for Markopolis to read the config file correctly.
+
+Point markopolis to your config file by setting the `MARKOPOLIS_CONFIG_PATH` to the location
+of your yaml file. You can also add it to your shell config so it persists across sessions.
+
+
+**bash or zsh (temporarily for current session)**
+```bash
+export MARKOPOLIS_CONFIG_PATH=/path/to/settings.yaml
+```
+
+**bash or zsh (permanently for all sessions)**
+```bash
+echo 'export MARKOPOLIS_CONFIG_PATH=/path/to/settings.yaml' >> ~/.zshrc
+echo 'export MARKOPOLIS_CONFIG_PATH=/path/to/settings.yaml' >> ~/.bashrc
+
+source ~/.zshrc
+source ~/.bashrc
+```
+
+**fish (temporarily for current session)**
+```fish
+set -x MARKOPOLIS_CONFIG_PATH /path/to/settings.yaml
+```
+
+
+**fish (permanently for all sessions)**
+```fish
+echo 'set -x MARKOPOLIS_CONFIG_PATH "/path/to/settings.yaml"' >> ~/.config/fish/config.fish
+source ~/.config/fish/config.fish
+```
+
+#### Settings
+
+Below is an example config:
 
 ```yaml
 default:
-  domain: "https://your-domain.com"
+  domain: https://your-domain.com
+  md_path: /path/to/markdown-notes
   api_key: <really long random alpha-numeric string>
 ```
 
-I recommend using a python virtual environment for the local installation.
+Parameter | Description
+-- | --
+domain | This should point to the markopolis backend deployed. **Same value as MARKOPOLIS_DOMAIN from docker-compose.**
+md_path | Local path to where your markdown notes are stored. This is the path on your local machine on which you have your obsidian notes stored.
+api_key | The API key you used when deploying the server. **Same as MARKOPOLIS_API_KEY from docker-compose.**
+
+## Testing deployment
+
+Immediately after deployment, since no markdown files have been added, initially the
+site will throw an error. To test if the deployment was successful you can navigate
+to the API documentation page which is auto-generated and available at `http(s)://your-domain.com/docs`.
+This should display a swagger UI with details about all available API endpoints. It would
+look exactly like what's shown at [Markopolis API docs](https://markopolis.app/docs)
 
 ## Usage
 
-On the first run, since, there are no markdown files to load, the page will throw an error.
-You can verify if installation was successful by navigating to the API documentation
-which is generated automatically at `https://your-domain.com/docs`. This should load up
-the SwaggerUI for the API endpoints exposed.
+There are a few details users need to be aware to make sure Markopolis
+works correctly. Particularly when it comes to maintaing compatibility
+with Obsidian eco-system.
 
-### Publishing files
-All markdown files you want to publish should have `publish: true` in the frontmatter.
-Navigate to the directory containing your markdown notes and simply run `consume`.
-This command will scan all markdown files in your folder and upload it to the server.
-If the file already exists on the server, then it checks if there are any changes.
-If there are no changes, the file is skipped. If there are changes then it is overwritten.
+## Uploading files to the server
+In order to upload files easily to your server, Markopolis provides 2
+convenience functions.
 
-## New Sync Feature
-v1.1.0 and up support a new command `mdsync` which syncs your local markdown files with the server.
-This command is useful for keeping your local files in sync with the server. It will upload new files
-and update existing files. It will also delete files that are no longer present in the local directory.
+### mdsync
+Navigate to the root directory of your markdown files and simply run
+`mdsync`. This command will upload all markdown and image files to the
+server and in addition will **DELETE** any files on the server that are NOT
+present in the local directory.
 
-### Home Page
-The home page content is loaded from a file called `home.md`.
+### consume
+Navigate to the root directory of your markdown files and run `consume`.
+This command will upload all markdown and image files to the server.
+This command will **NOT DELETE** files on the server.
 
+> [!info]
+> Note that both commands replicate the entire file and directory structure.
+> Both commands need to be run from the *root* location for your markdown
+> files.
 
-## Roadmap
-In no particular order, here are some of the features that are planned:
-
-- [x] Support for Obsidian callouts.
-- [x] Mermaid diagrams.
-- [ ] Editor-agnostic cross-device syncing.
-- [x] Delete file API interface.
-- [ ] Graph view.
-- [ ] Daily notes.
-- [ ] Private pages to hide specific pages under a password.
-- [ ] Support for integrating Obsidian Publish and syncing.
-- [x] Support for rendering Markdown tables.
-- [x] Support for images.
-- [ ] Better tag handling (view tags as links, collect pages by tags, a page for viewing all tags).
-- [ ] Support for DataView queries.
+## Homepage
+The homepage or root page is loaded from the contents of a markdown file
+titled `home.md`. It has to be named exactly as `home.md` without any
+capitalization. Without this the homepage will throw an error.
 
 
-Thank you for considering Markopolis for your Markdown note-sharing needs! If you like
-the project considering starring the repository.
+## Display titles
+By default, all files and page titles will use the filename. You can
+override this by supplying a `title:` field in your yaml frontmatter.
+If `title` is provided in the frontmatter, it will be used for display
+everywhere. Note that the url will point to the filename though.
 
-## Contributing
-
-
-Contributions are most welcome. I am looking to add several features
-to this project and would appreciate any and all help I can get.
-Check out the Roadmap for a list of features I currently plan to implement.
-
-Below are few things I need help with:
-
-- Unit testing
-- User feedback
-- Obsidian plugin development
-- Figuring out the best strategy to implement Sync
-- Front-end improvements
-
-Please feel free to connect with me on github by opening an issue or drop an email.
-Any and all help is appreciated :)
+## Wikilinks and Images
+All wikilnks and image paths should be specified relative to the vault root.
+Obsidian has an inbuilt setting to handle this automatically without having
+to change your workflows. To configure this, go to `Settings -> Files and links`
+and under `New Link Format` choose `Absolute path in vault`
