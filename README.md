@@ -7,6 +7,7 @@ with your Markdown files, and it’ll handle the rest. The idea is to help you c
 and features around your notes without being tied down by proprietary systems. It’s completely
 open-source and free under the MIT License. Check out the [GitHub repo](https://github.com/rishikanthc/markopolis) and start exploring!
 
+**TLDR:** Self-hosted Obsidian publish with an API to extend functionality.
 
 ## Features
 - **Simple Deployment:** Extremely easy to deploy, configure, and use.
