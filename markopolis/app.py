@@ -12,7 +12,11 @@ import sys
 
 logger.add(sys.stdout, format="{time} {level} {message}", level="DEBUG")
 
-app = FastAPI()
+app = FastAPI(
+    title="Markopolis API",
+    description="API interface for markopolis",
+    version="2.0.1",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -92,10 +96,10 @@ async def get_frontmatter(
         path = "home"
     try:
         # Fetch the frontmatter
-        frontmatter_data = M.get_frontmatter(path)
+        frontmatter = M.get_frontmatter(path)
 
         # Create an instance of the Frontmatter dataclass
-        frontmatter = D.Frontmatter(**frontmatter_data)
+        # frontmatter = D.Frontmatter(**frontmatter_data)
 
         return frontmatter
 

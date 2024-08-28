@@ -1,17 +1,18 @@
 import base64
 from loguru import logger
+from datetime import datetime
 import sys
 import re
 import regex as mre
 import sh
 import markdown
 from .md_extensions import (
-    ImageExtension,
     CalloutExtension,
     MermaidExtension,
     StrikethroughExtension,
     HighlightExtension,
 )
+from .mdx_wikilink_mod import WikiLinkPlusExtension
 from markopolis.config import settings
 import yaml
 import os
@@ -134,19 +135,16 @@ def unsluggify(slug: str) -> str:
     return slug.replace("-", " ")
 
 
-def get_frontmatter(note_path: str):
-    # Unspluggify the note path to convert hyphens back to spaces
-    unsluggified_path = unsluggify(note_path)
-
+def get_frontmatter(note_path: str) -> D.Frontmatter:
     # Get the root directory from settings
     md_root = settings.md_path
 
     # Construct the full path to the markdown file by adding the .md extension
-    full_file_path = os.path.join(md_root, f"{unsluggified_path}.md")
+    full_file_path = os.path.join(md_root, f"{note_path}.md")
 
     # Check if the file exists
     if not os.path.exists(full_file_path):
-        raise FileNotFoundError(f"Note '{unsluggified_path}' not found.")
+        raise FileNotFoundError(f"Note '{note_path}' not found.")
 
     # Read the file content
     with open(full_file_path, "r") as md_file:
@@ -154,21 +152,35 @@ def get_frontmatter(note_path: str):
 
     # Parse the frontmatter from the markdown file
     if content_lines[0].strip() == "---":
-        end_of_yaml = content_lines[1:].index("---\n") + 1
+        try:
+            end_of_yaml = content_lines[1:].index("---\n") + 1
+        except ValueError:
+            raise ValueError("Invalid frontmatter: missing closing '---'")
+
         yaml_frontmatter = "".join(content_lines[1:end_of_yaml])
         parsed_yaml = yaml.safe_load(yaml_frontmatter)
 
-        # Convert to the Frontmatter dataclass structure
-        frontmatter = {
-            "title": parsed_yaml.get("title", unsluggified_path),
-            "date": parsed_yaml.get("date", None),
-            "tags": parsed_yaml.get("tags", []),
-            "custom_fields": {
+        # Handle the date field, parse it using datetime.fromisoformat
+        raw_date = parsed_yaml.get("date", None)
+        if isinstance(raw_date, str):
+            try:
+                parsed_date = datetime.fromisoformat(raw_date)
+            except ValueError:
+                parsed_date = None  # Leave as None if date parsing fails
+        else:
+            parsed_date = raw_date  # In case it's already a datetime object
+
+        # Construct and return the Frontmatter object
+        frontmatter = D.Frontmatter(
+            title=parsed_yaml.get("title", note_path),
+            date=parsed_date,
+            tags=parsed_yaml.get("tags", []),
+            custom_fields={
                 key: value
                 for key, value in parsed_yaml.items()
                 if key not in ["title", "date", "tags"]
             },
-        }
+        )
 
         return frontmatter
     else:
@@ -177,24 +189,19 @@ def get_frontmatter(note_path: str):
 
 def get_note_html(note_path):
     # Unspluggify the note path to convert hyphens back to spaces
-    unsluggified_path = unsluggify(note_path)
+    # unsluggified_path = unsluggify(note_path)
 
-    md_configs = {
-        "mdx_wikilink_plus": {
-            "base_url": settings.frontend_url,
-            "url_whitespace": "%20",
-        },
-    }
-
+    mdx_config = {"base_url": settings.domain + "/api/", "url_whitespace": "%20"}
     # Get the root directory from settings
     md_root = settings.md_path
 
     # Construct the full path to the markdown file by adding the .md extension
-    full_file_path = os.path.join(md_root, f"{unsluggified_path}.md")
+    # full_file_path = os.path.join(md_root, f"{unsluggified_path}.md")
+    full_file_path = os.path.join(md_root, f"{note_path}.md")
 
     # Check if the file exists
     if not os.path.exists(full_file_path):
-        raise FileNotFoundError(f"Note '{unsluggified_path}' not found.")
+        raise FileNotFoundError(f"Note '{note_path}' not found.")
 
     # Read the markdown file content
     with open(full_file_path, "r") as md_file:
@@ -212,8 +219,10 @@ def get_note_html(note_path):
         extensions=[
             "fenced_code",
             "codehilite",
-            ImageExtension(),
-            "mdx_wikilink_plus",
+            WikiLinkPlusExtension(**mdx_config),
+            # CustomImageExtension(**mdx_config),
+            # ImageExtension(),
+            # "mdx_wikilink_plus",
             # WikiLinkExtension(base_url="/", end_url=""),
             "markdown_checklist.extension",
             "markdown.extensions.tables",
@@ -224,7 +233,7 @@ def get_note_html(note_path):
             CalloutExtension(),
             # "mdx_math",
         ],
-        extension_configs=md_configs,
+        # extension_configs=md_configs,
     )
     # Convert Markdown to HTML
     html_content = md.convert(markdown_content)
