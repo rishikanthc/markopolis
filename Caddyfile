@@ -1,0 +1,23 @@
+:80
+# Enable compression for all routes
+encode gzip
+
+# Route /api requests to the backend
+route /api/* {
+	reverse_proxy localhost:8000
+}
+
+# Route /docs requests to the backend
+route /docs* {
+	reverse_proxy localhost:8000
+}
+
+# Route /openapi.json requests to the backend
+route /openapi.json {
+	reverse_proxy localhost:8000
+}
+
+# Route all other requests to the Svelte frontend
+route /* {
+	reverse_proxy localhost:3000
+}
