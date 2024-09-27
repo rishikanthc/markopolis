@@ -7,6 +7,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 
 	export let title;
+	export let captions;
 </script>
 
 <div class="mx-auto my-6 flex w-5/6 flex-col justify-start gap-3">
@@ -14,8 +15,8 @@
 		{title}
 	</div>
 	<div class="gap-0.3 mb-8 flex flex-col justify-start text-sm">
-		<div>Machine Learning / Self-Hosting</div>
-		<div>Technology /</div>
+		<div>{captions[0]} / {captions[1]}</div>
+		<div>{captions[2]}</div>
 	</div>
 
 	<Button

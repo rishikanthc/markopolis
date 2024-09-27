@@ -77,7 +77,7 @@
 	bind:this={sidebarRef}
 	class={`fixed left-0 top-0 z-30 flex h-svh w-72 justify-between bg-background transition-transform lg:translate-x-0 ${showSidebar ? '' : '-translate-x-full'}`}
 >
-	<Sidebar title={siteTitle}>
+	<Sidebar title={siteTitle} captions={data.captions}>
 		{#if fileTree}
 			<FileTree bind:fileTree />
 		{:else}

@@ -1,15 +1,19 @@
 version: '3.8'
 
 services:
-  sveltekit-pocketbase:
-    image: local-sveltekit-pocketbase:test
+  markopolis:
+    image: ghcr.io/rishikanthc/markopolis:3.0.0
     ports:
       - "8080:8080"
+      - "3000:3000"
     environment:
-      - POCKETBASE_URL=http://localhost:8080
-      - API_KEY=compose-runtime-key
-      - POCKETBASE_ADMIN_EMAIL=admin@example.com
-      - POCKETBASE_ADMIN_PASSWORD=123
-      - TITLE=Compose Runtime App
+      - POCKETBASE_URL=http://127.0.0.1:8080
+      - API_KEY=test
+      - POCKETBASE_ADMIN_EMAIL=admin@admin.com
+      - POCKETBASE_ADMIN_PASSWORD=password
+      - TITLE=Markopolis
+      - CAP1=Markdown
+      - CAP2="Self-hosted"
+      - CAP3="Knowledge Garden"
     volumes:
-      - ./pb_data:/app/pb_data
+      - ./pb_data:/app/pb

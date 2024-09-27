@@ -1,12 +1,29 @@
-FROM alpine:latest
+FROM node:22.9.0-alpine3.20
 
 ARG PB_VERSION=0.22.21
 ARG POCKETBASE_ADMIN_EMAIL=admin@example.com
 ARG POCKETBASE_ADMIN_PASSWORD=admin123
+ARG POCKETBASE_URL=http://127.0.0.1:8080
+ARG TITLE=Markopolis
+ARG API_KEY=test
+ARG CAP1=none
+ARG CAP2=none
+ARG CAP3=none
 
-RUN apk add --no-cache \
+# Set environment variables to be overridden at runtime
+ENV PB_VERSION=${PB_VERSION}
+ENV POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
+ENV POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
+ENV POCKETBASE_URL=${POCKETBASE_URL}
+ENV TITLE=${TITLE}
+ENV API_KEY=${API_KEY}
+ENV CAP1=${CAP1}
+ENV CAP2=${CAP2}
+ENV CAP3=${CAP3}
+
+# Install required packages
+RUN apk update && apk add --no-cache \
     unzip \
-    ca-certificates \
     curl
 
 # download and unzip PocketBase
@@ -26,7 +43,15 @@ RUN chmod +x /pb/start.sh
 # uncomment to copy the local pb_hooks dir into the image
 # COPY ./pb_hooks /pb/pb_hooks
 
-EXPOSE 8080
+WORKDIR /app
+COPY . .
+COPY start_services.sh /app/start.sh
+
+RUN npm ci
+
+RUN /pb/start.sh
+
+EXPOSE 3000 8080
 
 # start PocketBase
-CMD ["/pb/start.sh"]
+CMD ["/bin/sh", "/app/start.sh"]

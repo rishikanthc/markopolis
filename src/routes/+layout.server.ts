@@ -8,6 +8,7 @@ import {
   POCKETBASE_ADMIN_EMAIL,
   POCKETBASE_ADMIN_PASSWORD,
 } from "$env/static/private";
+import { CAP1, CAP2, CAP3 } from "$env/static/private";
 
 export async function load({ fetch, params }) {
   const ftree = await fetch("/api/ls");
@@ -15,12 +16,15 @@ export async function load({ fetch, params }) {
   const tags = await tagresp.json();
   const filetree = await ftree.json();
   const siteTitle = TITLE;
+  const captions = [CAP1, CAP2, CAP3];
 
   console.log(
     "logged in with: ",
     POCKETBASE_ADMIN_EMAIL,
     POCKETBASE_ADMIN_PASSWORD,
+    CAP1,
+    CAP2,
   );
 
-  return { filetree, siteTitle, tags };
+  return { filetree, siteTitle, tags, captions };
 }

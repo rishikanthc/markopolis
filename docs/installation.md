@@ -31,22 +31,23 @@ TITLE=Markopolis
 Next create a `docker-compose.yaml` file with the following:
 
 ```yaml
+version: '3.8'
+
 services:
-  markopolis:
-    image: ghcr.io/rishikanthc/markopolis:0.2.0
+  sveltekit-pocketbase:
+    image: ghcr.io/rishikanthc/markopolis:latest
     ports:
-      - "8090:8090" # optional
+      - "8080:8080"
       - "3000:3000"
-    env_file:
-      .env
     environment:
-      - API_KEY=<long random string>
-      - POCKETBASE_ADMIN_EMAIL=example@example.com
+      - POCKETBASE_URL=http://127.0.0.1:8080
+      - API_KEY=test
+      - POCKETBASE_ADMIN_EMAIL=admin@admin.com
       - POCKETBASE_ADMIN_PASSWORD=password
       - TITLE=Markopolis
     volumes:
-      - markopolis_data:/app/db
-    restart: unless-stopped
+      - ./pb_data:/app/pb
+
 ```
 
 Now you can deploy Markopolis by running `docker-compse up -d`
