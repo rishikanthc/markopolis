@@ -1,0 +1,9 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "8090:8090"  # SvelteKit app
+      - "3000:3000"
+    env_file:
+      - .env
