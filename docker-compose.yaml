@@ -1,9 +1,15 @@
+version: '3.8'
+
 services:
-  app:
-    build:
-      context: .
+  sveltekit-pocketbase:
+    image: local-sveltekit-pocketbase:test
     ports:
-      - "8090:8090"  # SvelteKit app
-      - "3000:3000"
-    env_file:
-      - .env
+      - "8080:8080"
+    environment:
+      - POCKETBASE_URL=http://localhost:8080
+      - API_KEY=compose-runtime-key
+      - POCKETBASE_ADMIN_EMAIL=admin@example.com
+      - POCKETBASE_ADMIN_PASSWORD=123
+      - TITLE=Compose Runtime App
+    volumes:
+      - ./pb_data:/app/pb_data
