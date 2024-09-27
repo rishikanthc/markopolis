@@ -1,5 +1,0 @@
-default:
-  domain: http://localhost:8000
-  frontend_url: http://localhost:3000
-  api_key: test
-  title: Markopolis
