@@ -196,77 +196,9 @@ set -x MARKOPOLIS_DOMAIN https://markopolis.example.com
 ```fish
 echo 'set -x MARKOPOLIS_DOMAIN "https://markopolis.example.com"' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
-```
-
-#### Settings
-
-Below is an example config:
-
-```yaml
-default:
-  domain: https://your-domain.com
-  md_path: /path/to/markdown-notes
-  api_key: <really long random alpha-numeric string>
-```
-
-Parameter | Description
--- | --
-domain | This should point to the markopolis backend deployed. **Same value as MARKOPOLIS_DOMAIN from docker-compose.**
-md_path | Local path to where your markdown notes are stored. This is the path on your local machine on which you have your obsidian notes stored.
-api_key | The API key you used when deploying the server. **Same as MARKOPOLIS_API_KEY from docker-compose.**
-
-## Testing deployment
-
-Immediately after deployment, since no markdown files have been added, initially the
-site will throw an error. To test if the deployment was successful you can navigate
-to the API documentation page which is auto-generated and available at `http(s)://your-domain.com/docs`.
-This should display a swagger UI with details about all available API endpoints. It would
-look exactly like what's shown at [Markopolis API docs](https://markopolis.app/docs)
-
-## Usage
-
-There are a few details users need to be aware to make sure Markopolis
-works correctly. Particularly when it comes to maintaing compatibility
-with Obsidian eco-system.
-
-## Uploading files to the server
-In order to upload files easily to your server, Markopolis provides 2
-convenience functions.
-
-### mdsync
-Navigate to the root directory of your markdown files and simply run
-`mdsync`. This command will upload all markdown and image files to the
-server and in addition will **DELETE** any files on the server that are NOT
-present in the local directory.
-
-### consume
-Navigate to the root directory of your markdown files and run `consume`.
-This command will upload all markdown and image files to the server.
-This command will **NOT DELETE** files on the server.
-
-> [!info]
-> Both commands will only upload files that `publish: true` in the frontmatter.
-> Files that don't have this set will not be uploaded.
-
-> [!info]
-> Note that both commands replicate the entire file and directory structure.
-> Both commands need to be run from the *root* location for your markdown
-> files.
-
-## Homepage
-The homepage or root page is loaded from the contents of a markdown file
-titled `home.md`. It has to be named exactly as `home.md` without any
-capitalization. Without this the homepage will throw an error.
+`
 
 
-## Display titles
-By default, all files and page titles will use the filename. You can
-override this by supplying a `title:` field in your yaml frontmatter.
-If `title` is provided in the frontmatter, it will be used for display
-everywhere. Note that the url will point to the filename though.
 
-## Wikilinks and Images
-All wikilnks and image paths should be specified relative to the vault root.
-Obsidian has an inbuilt setting to handle this automatically without having
-to change your workflows. To configure this, go to `Settings -> Files and links`
-and under `New Link Format` choose `Absolute path in vault`
+For more information on how to use Markopolis checkout the [Markopolis](https://markopolis.app) website.
+If you like this project please considering starring it.
