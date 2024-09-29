@@ -196,9 +196,7 @@ set -x MARKOPOLIS_DOMAIN https://markopolis.example.com
 ```fish
 echo 'set -x MARKOPOLIS_DOMAIN "https://markopolis.example.com"' >> ~/.config/fish/config.fish
 source ~/.config/fish/config.fish
-`
-
-
+```
 
 For more information on how to use Markopolis checkout the [Markopolis](https://markopolis.app) website.
 If you like this project please considering starring it.
