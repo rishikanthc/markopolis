@@ -84,7 +84,7 @@ services:
       - CAP2=caption2
       - CAP3=caption3
     volumes:
-      - ./pb_data:/app/pb
+      - ./pb_data:/app/db
 ```
 
 Now you can deploy Markopolis by running `docker-compse up -d`
