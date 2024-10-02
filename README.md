@@ -29,7 +29,7 @@ and lots more to come. Checkout the [roadmap](https://markopolis.app/roadmap) pa
 ## Demo
 The documentation [website](https://markopolis.app) is hosted using Markopolis and is a live demo.
 These notes are used to demonstrate the various aspects of Markopolis.
-Checkout the [[Markdown Syntax]] page for a full showcase of all supported markdown syntax. checking out how different markdown syntax is rendered.
+Checkout the [Markdown Syntax](https://markopolis.app/Markdown%20Syntax.md) page for a full showcase of all supported markdown syntax.
 
 Thank you for considering Markopolis for your Markdown note-sharing needs! If you like
 the project considering starring the repository.
@@ -55,7 +55,7 @@ installing the CLI tool. The CLI tool provides a utility command to upload
 your markdown files to the server. The articles are published as soon as
 this command is run.
 
-## Server installation
+## Step 1: Server installation
 
 We will be using Docker for deploying Markopolis.
 Create a docker-compose and configure environment variables.
@@ -101,31 +101,6 @@ CAP2 | Caption 2
 CAP3 | Caption 3
 
 
-## Local Installation
-Requirements: Python 3.12
-
-Install:
-```sh
-pip install markopolis
-```
-
-### Configuration:
-Create a config file as a YAML file in any location.
-Set the `MARKOPOLIS_CONFIG_PATH` environment variable to point to the location of the config file.
-The config file should specify the domain of the deployment including the protocol and
-the api key. The api key should be the same as what you used for the deployment:
-
-```yaml
-domain: "https://your-domain.com"
-```
-
-I recommend using a python virtual environment for the local installation.
-
-
-> [!warning]
-> the domains should not contain a leading slash at the end.
-> For eg. https://example.com will work
-> https://example.com/ will not work
 
 ## STEP 2: Local installation
 
