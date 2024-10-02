@@ -15,6 +15,8 @@ sleep 5
 
 sleep 2
 
+npm run build
+
 # Build the SvelteKit app (requires PocketBase to be running)
 node build
 

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   markopolis:
     image: ghcr.io/rishikanthc/markopolis:3.0.0
@@ -9,7 +7,7 @@ services:
     environment:
       - POCKETBASE_URL=http://127.0.0.1:8080
       - API_KEY=test
-      - POCKETBASE_ADMIN_EMAIL=admin@admin.com
+      - POCKETBASE_ADMIN_EMAIL=admin@gmail.com
       - POCKETBASE_ADMIN_PASSWORD=password
       - TITLE=Markopolis
       - CAP1=Markdown

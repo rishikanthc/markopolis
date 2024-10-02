@@ -1,25 +1,23 @@
 FROM node:22.9.0-alpine3.20
 
-ARG PB_VERSION=0.22.21
-ARG POCKETBASE_ADMIN_EMAIL=admin@example.com
-ARG POCKETBASE_ADMIN_PASSWORD=admin123
-ARG POCKETBASE_URL=http://127.0.0.1:8080
-ARG TITLE=Markopolis
-ARG API_KEY=test
-ARG CAP1=none
-ARG CAP2=none
-ARG CAP3=none
+ARG POCKETBASE_ADMIN_EMAIL
+ARG POCKETBASE_ADMIN_PASSWORD
+ARG POCKETBASE_URL
+ARG TITLE
+ARG API_KEY
+ARG CAP1
+ARG CAP2
+ARG CAP3
 
 # Set environment variables to be overridden at runtime
-ENV PB_VERSION=${PB_VERSION}
-ENV POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
-ENV POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
-ENV POCKETBASE_URL=${POCKETBASE_URL}
-ENV TITLE=${TITLE}
-ENV API_KEY=${API_KEY}
-ENV CAP1=${CAP1}
-ENV CAP2=${CAP2}
-ENV CAP3=${CAP3}
+ENV POCKETBASE_ADMIN_EMAIL=$POCKETBASE_ADMIN_EMAIL
+ENV POCKETBASE_ADMIN_PASSWORD=$POCKETBASE_ADMIN_PASSWORD
+ENV POCKETBASE_URL=$POCKETBASE_URL
+ENV TITLE=$TITLE
+ENV API_KEY=$API_KEY
+ENV CAP1=$CAP1
+ENV CAP2=$CAP2
+ENV CAP3=$CAP3
 
 # Install required packages
 RUN apk update && apk add --no-cache \
@@ -27,15 +25,15 @@ RUN apk update && apk add --no-cache \
     curl
 
 # download and unzip PocketBase
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
+ADD https://github.com/pocketbase/pocketbase/releases/download/v0.22.21/pocketbase_0.22.21_linux_amd64.zip /tmp/pb.zip
 RUN unzip /tmp/pb.zip -d /pb/
 
 # create PocketBase data directory
 RUN mkdir -p /pb/pb_data
-COPY start.sh /pb/start.sh
+# COPY start.sh /pb/start.sh
 
 # start PocketBase in a background process to set up the database
-RUN chmod +x /pb/start.sh
+# RUN chmod +x /pb/start.sh
 
 # uncomment to copy the local pb_migrations dir into the image
 # COPY ./pb_migrations /pb/pb_migrations
@@ -49,7 +47,7 @@ COPY start_services.sh /app/start.sh
 
 RUN npm ci
 
-RUN /pb/start.sh
+# RUN /pb/start.sh
 
 EXPOSE 3000 8080
 
