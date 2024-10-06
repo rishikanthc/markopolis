@@ -59,7 +59,7 @@
 			<Button class="z-20" on:click={toggleSidebar} variant="ghost" size="icon">
 				<Grip />
 			</Button>
-			<div class="title text-2xl">{siteTitle}</div>
+			<div class="title text-2xl break-words">{siteTitle}</div>
 		</div>
 		<div class="gap-0.1 flex">
 			<TagBar {tags} />

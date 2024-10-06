@@ -4,6 +4,7 @@
 
 	interface FileNode {
 		id: string;
+		title: string;
 		name: string;
 		url: string;
 		children: FileNode[];
@@ -53,9 +54,9 @@
 			{/if}
 
 			{#if node.url}
-				<a href={`/${node.url}`} class="text-carbongray-800 hover:underline">{node.name}</a>
+				<a href={`/${node.url}`} class="text-carbongray-800 hover:underline">{node.title}</a>
 			{:else}
-				<span class="font-semibold">{node.name}</span>
+				<span class="font-semibold">{node.title}</span>
 			{/if}
 		</div>
 

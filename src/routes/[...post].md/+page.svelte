@@ -15,10 +15,12 @@
 	</div>
 
 	<div class="flex flex-col justify-center gap-1">
-		<div class="flex items-center gap-1">
-			<CalendarDays class="text-carbongray-400" size={15} />
-			<div class="text-base text-carbongray-400">{date.split(' ')[0]}</div>
-		</div>
+		{#if data?.post?.frontmatter?.date}
+			<div class="flex items-center gap-1">
+				<CalendarDays class="text-carbongray-400" size={15} />
+				<div class="text-base text-carbongray-400">{data.post.frontmatter.date.split(' ')[0]}</div>
+			</div>
+		{/if}
 		{#if tags}
 			<div class="flex flex-wrap gap-1">
 				{#each tags as tag (tag.name)}

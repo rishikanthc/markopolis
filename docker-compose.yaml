@@ -11,7 +11,7 @@ services:
       - POCKETBASE_ADMIN_PASSWORD=password
       - TITLE=Markopolis
       - CAP1=Markdown
-      - CAP2="Self-hosted"
+      - CAP2="Self-hosting"
       - CAP3="Knowledge Garden"
     volumes:
       - ./pb_data:/app/pb
