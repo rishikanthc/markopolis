@@ -87,7 +87,7 @@ services:
       - ./pb_data:/app/db
 ```
 
-Now you can deploy Markopolis by running `docker-compse up -d`
+Now you can deploy Markopolis by running `docker-compose up -d`
 
 Parameter | Description
 -- | --
