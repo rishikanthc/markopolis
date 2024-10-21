@@ -83,7 +83,7 @@
 
 	/* For inline code */
 	:global(p code) {
-		@apply bg-carbongray-400 px-1 py-0.5;
+		@apply bg-carbongray-100 rounded-sm px-1 py-0.5;
 		white-space: normal;
 		word-wrap: break-word;
 		overflow-wrap: break-word;
