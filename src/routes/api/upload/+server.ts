@@ -19,6 +19,7 @@ import rehypeCallouts from "rehype-callouts";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import wikiLink from "remark-wiki-link";
 import obsidianImagePlugin from "$lib/remark-plugins/obsidianImage";
+import rehypeWrapLiWithP from "$lib/rehype_plugins/wrapWithP"; 
 
 import {
   POCKETBASE_ADMIN_PASSWORD,
@@ -145,7 +146,7 @@ async function compileMarkdown(fileContent: string, url: string): Promise {
       remarkLogImages,
       remarkTags,
     ],
-    rehypePlugins: [rehypeKatex, rehypeCallouts, rehypeAutolinkHeadings],
+    rehypePlugins: [rehypeKatex, rehypeCallouts, rehypeAutolinkHeadings, rehypeWrapLiWithP],
   });
 
   const frontmatter: Frontmatter = compiled.data?.fm || {};
