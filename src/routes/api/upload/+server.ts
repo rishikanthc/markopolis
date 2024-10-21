@@ -126,7 +126,7 @@ async function compileMarkdown(fileContent: string, url: string): Promise {
   const processedContent = addFrontmatterToMarkdown(fileContent, url);
 
   const compiled: CompiledMD = await compile(processedContent, {
-    extensions: [".md", ".svx"],
+    extensions: [".svx"],
     smartypants: {
       dashes: "oldschool",
     },
@@ -153,7 +153,8 @@ async function compileMarkdown(fileContent: string, url: string): Promise {
   const fileName: string = path.parse(fileContent).name; // Adjusted as fdpath is now url
   const title: string = frontmatter.title || fileName;
 
-  const node = { code: processContent(compiled.code), data: compiled.data };
+  // const node = { code: processContent(compiled.code), data: compiled.data };
+  const node = {code: processedContent, data: processedContent};
 
   // Use the provided URL
   return { compiled: node, title, url };
@@ -307,9 +308,10 @@ async function ensureMdbaseCollection() {
 }
 
 function extractWikiLinks(htmlContent: string): string[] {
-  const regex = /<a[^>]+href="([^"]+\.md)"[^>]*>/g;
-  const matches = htmlContent.matchAll(regex);
-  return Array.from(matches, (m) => m[1]);
+  // const regex = /<a[^>]+href="([^"]+\.md)"[^>]*>/g;
+  // const matches = htmlContent.matchAll(regex);
+  // return Array.from(matches, (m) => m[1]);
+  return []
 }
 
 async function updateLinks(recordId: string, content: string) {

@@ -4,12 +4,19 @@
 	import { afterNavigate } from "$app/navigation";
 	import mermaid from "mermaid";
 	import hljs from "highlight.js"; // Import highlight.js
+	import SvelteMarkdown from "svelte-markdown";
 	// import 'highlight.js/styles/nnfx-dark.min.css'; // Import a default style for highlight.js
 	import "highlight.js/styles/default.css";
+	import { marked } from "marked";
+	import admonition from "marked-admonition-extension";
 	// import 'highlight.js/styles/github-dark.css';
 	import { browser } from "$app/environment";
+	import markedAlert from "marked-alert";
 
 	export let content: string;
+
+	marked.use(markedAlert());
+	$: parsedContent = marked(content);
 
 	// Function to initialize and render mermaid diagrams
 	const renderMermaid = async () => {
@@ -56,7 +63,7 @@
 </script>
 
 <div class="text-lg leading-relaxed md:w-[700px]">
-	{@html content}
+	<SvelteMarkdown bind:source={parsedContent} />
 </div>
 
 <style>
